@@ -1,0 +1,2624 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: myfuselab-template
+objects:
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      fabric8.io/iconUrl: img/icons/camel.svg
+      fabric8.io/metrics-path: dashboard/file/camel-routes.json/?var-project=camel-ose-springboot-xml&var-version=1.0.0-SNAPSHOT
+    creationTimestamp: null
+    generation: 1
+    labels:
+      app: camel-ose-springboot-xml
+      group: org.mycompany
+      provider: fabric8
+      version: 1.0.0-SNAPSHOT
+    name: camel-ose-springboot-xml
+  spec:
+    replicas: 1
+    revisionHistoryLimit: 2
+    selector:
+      app: camel-ose-springboot-xml
+      group: org.mycompany
+      provider: fabric8
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 3600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        annotations:
+          fabric8.io/iconUrl: img/icons/camel.svg
+          fabric8.io/metrics-path: dashboard/file/camel-routes.json/?var-project=camel-ose-springboot-xml&var-version=1.0.0-SNAPSHOT
+        creationTimestamp: null
+        labels:
+          app: camel-ose-springboot-xml
+          group: org.mycompany
+          provider: fabric8
+          version: 1.0.0-SNAPSHOT
+      spec:
+        containers:
+        - env:
+          - name: SPRING_APPLICATION_JSON
+            value: '{"server":{"tomcat":{"max-threads":1}}}'
+          - name: KUBERNETES_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: 172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml@sha256:79b497270996978d0d6bc3bbc5219bba548d0c0ec7bf6594e9ed6c56a91e6785
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 180
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: spring-boot
+          ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          - containerPort: 9779
+            name: prometheus
+            protocol: TCP
+          - containerPort: 8778
+            name: jolokia
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: "1"
+            requests:
+              cpu: 200m
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+    test: false
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - spring-boot
+        from:
+          kind: ImageStreamTag
+          name: camel-ose-springboot-xml:latest
+          namespace: myfuseproject
+      type: ImageChange
+  status:
+    availableReplicas: 0
+    latestVersion: 0
+    observedGeneration: 0
+    replicas: 0
+    unavailableReplicas: 0
+    updatedReplicas: 0
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftWebConsole
+    creationTimestamp: null
+    generation: 1
+    labels:
+      app: customersweb
+    name: customersweb
+  spec:
+    replicas: 3
+    selector:
+      deploymentconfig: customersweb
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: customersweb
+          deploymentconfig: customersweb
+      spec:
+        containers:
+        - image: 172.30.1.1:5000/myfuseproject/customersweb@sha256:e95d073a9f0079da928774c812cb282c91c3d46e035ceb60b8af873bbbc7f06a
+          imagePullPolicy: Always
+          name: customersweb
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+    test: false
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - customersweb
+        from:
+          kind: ImageStreamTag
+          name: customersweb:latest
+          namespace: myfuseproject
+      type: ImageChange
+    - type: ConfigChange
+  status:
+    availableReplicas: 0
+    latestVersion: 0
+    observedGeneration: 0
+    replicas: 0
+    unavailableReplicas: 0
+    updatedReplicas: 0
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      template.alpha.openshift.io/wait-for-ready: "true"
+    creationTimestamp: null
+    generation: 1
+    labels:
+      template: mysql-ephemeral-template
+    name: mysql
+  spec:
+    replicas: 1
+    selector:
+      name: mysql
+    strategy:
+      activeDeadlineSeconds: 21600
+      recreateParams:
+        timeoutSeconds: 600
+      resources: {}
+      type: Recreate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          name: mysql
+      spec:
+        containers:
+        - env:
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                key: database-user
+                name: mysql
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: database-password
+                name: mysql
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: database-root-password
+                name: mysql
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                key: database-name
+                name: mysql
+          image: registry.access.redhat.com/rhscl/mysql-57-rhel7@sha256:154cd19e9c2a9df09ad61ce61139b955499aecd2247eb32df299104c750c6feb
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 3306
+            timeoutSeconds: 1
+          name: mysql
+          ports:
+          - containerPort: 3306
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -i
+              - -c
+              - MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u $MYSQL_USER -D $MYSQL_DATABASE
+                -e 'SELECT 1'
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              memory: 512Mi
+          securityContext:
+            capabilities: {}
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /var/lib/mysql/data
+            name: mysql-data
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir: {}
+          name: mysql-data
+    test: false
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - mysql
+        from:
+          kind: ImageStreamTag
+          name: mysql:5.7
+          namespace: openshift
+      type: ImageChange
+    - type: ConfigChange
+  status:
+    availableReplicas: 0
+    latestVersion: 0
+    observedGeneration: 0
+    replicas: 0
+    unavailableReplicas: 0
+    updatedReplicas: 0
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: camel-ose-springboot-xml
+      group: org.mycompany
+      provider: fabric8
+      version: 1.0.0-SNAPSHOT
+    name: camel-ose-springboot-xml-s2i
+  spec:
+    failedBuildsHistoryLimit: 5
+    nodeSelector: {}
+    output:
+      to:
+        kind: ImageStreamTag
+        name: camel-ose-springboot-xml:latest
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      binary: {}
+      type: Binary
+    strategy:
+      sourceStrategy:
+        from:
+          kind: DockerImage
+          name: registry.access.redhat.com/fuse7/fuse-java-openshift
+      type: Source
+    successfulBuildsHistoryLimit: 5
+    triggers: []
+  status:
+    lastVersion: 0
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftWebConsole
+    creationTimestamp: null
+    labels:
+      app: customersweb
+    name: customersweb
+  spec:
+    nodeSelector: null
+    output:
+      to:
+        kind: ImageStreamTag
+        name: customersweb:latest
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      git:
+        ref: master
+        uri: https://github.com/mandibuswell/agile-integration-customers.git
+      type: Git
+    strategy:
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: nodejs:8
+          namespace: openshift
+      type: Source
+    triggers:
+    - imageChange: {}
+      type: ImageChange
+    - type: ConfigChange
+    - generic:
+        secret: c27d692e5de165fb
+      type: Generic
+    - github:
+        secret: 15404b31c0cd8ef6
+      type: GitHub
+  status:
+    lastVersion: 0
+- apiVersion: v1
+  kind: Build
+  metadata:
+    annotations:
+      openshift.io/build-config.name: camel-ose-springboot-xml-s2i
+      openshift.io/build.number: "1"
+      openshift.io/build.pod-name: camel-ose-springboot-xml-s2i-1-build
+    creationTimestamp: null
+    labels:
+      app: camel-ose-springboot-xml
+      buildconfig: camel-ose-springboot-xml-s2i
+      group: org.mycompany
+      openshift.io/build-config.name: camel-ose-springboot-xml-s2i
+      openshift.io/build.start-policy: Serial
+      provider: fabric8
+      version: 1.0.0-SNAPSHOT
+    name: camel-ose-springboot-xml-s2i-1
+    ownerReferences:
+    - apiVersion: build.openshift.io/v1
+      controller: true
+      kind: BuildConfig
+      name: camel-ose-springboot-xml-s2i
+      uid: a3694d15-a1fa-11e8-8784-080027653811
+  spec:
+    nodeSelector: {}
+    output:
+      pushSecret:
+        name: builder-dockercfg-hlkdv
+      to:
+        kind: ImageStreamTag
+        name: camel-ose-springboot-xml:latest
+    postCommit: {}
+    resources: {}
+    serviceAccount: builder
+    source:
+      binary: {}
+      type: Binary
+    strategy:
+      sourceStrategy:
+        from:
+          kind: DockerImage
+          name: registry.access.redhat.com/fuse7/fuse-java-openshift
+      type: Source
+    triggeredBy: null
+  status:
+    config:
+      name: camel-ose-springboot-xml-s2i
+    output:
+      to:
+        imageDigest: sha256:00299a414b1231f5fd5a6fd3d1565cc76c310a1149006c37919c78e8b69c3d12
+    outputDockerImageReference: 172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest
+    phase: New
+    stages:
+    - durationMilliseconds: 7945
+      name: CommitContainer
+      startTime: 2018-08-17T08:54:46Z
+      steps:
+      - durationMilliseconds: 7945
+        name: CommitContainer
+        startTime: 2018-08-17T08:54:46Z
+    - durationMilliseconds: 33575
+      name: Assemble
+      startTime: 2018-08-17T08:54:21Z
+      steps:
+      - durationMilliseconds: 33575
+        name: AssembleBuildScripts
+        startTime: 2018-08-17T08:54:21Z
+    - durationMilliseconds: 119425
+      name: PushImage
+      startTime: 2018-08-17T08:54:55Z
+      steps:
+      - durationMilliseconds: 119425
+        name: PushImage
+        startTime: 2018-08-17T08:54:55Z
+- apiVersion: v1
+  kind: Build
+  metadata:
+    annotations:
+      openshift.io/build-config.name: camel-ose-springboot-xml-s2i
+      openshift.io/build.number: "2"
+      openshift.io/build.pod-name: camel-ose-springboot-xml-s2i-2-build
+    creationTimestamp: null
+    labels:
+      app: camel-ose-springboot-xml
+      buildconfig: camel-ose-springboot-xml-s2i
+      group: org.mycompany
+      openshift.io/build-config.name: camel-ose-springboot-xml-s2i
+      openshift.io/build.start-policy: Serial
+      provider: fabric8
+      version: 1.0.0-SNAPSHOT
+    name: camel-ose-springboot-xml-s2i-2
+    ownerReferences:
+    - apiVersion: build.openshift.io/v1
+      controller: true
+      kind: BuildConfig
+      name: camel-ose-springboot-xml-s2i
+      uid: a3694d15-a1fa-11e8-8784-080027653811
+  spec:
+    nodeSelector: {}
+    output:
+      pushSecret:
+        name: builder-dockercfg-hlkdv
+      to:
+        kind: ImageStreamTag
+        name: camel-ose-springboot-xml:latest
+    postCommit: {}
+    resources: {}
+    serviceAccount: builder
+    source:
+      binary: {}
+      type: Binary
+    strategy:
+      sourceStrategy:
+        from:
+          kind: DockerImage
+          name: registry.access.redhat.com/fuse7/fuse-java-openshift
+      type: Source
+    triggeredBy: null
+  status:
+    config:
+      name: camel-ose-springboot-xml-s2i
+    output:
+      to:
+        imageDigest: sha256:8dcb94949509480e69cbf02ed5d4a117330a7d772eac01577d0dd891a54ea4ae
+    outputDockerImageReference: 172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest
+    phase: New
+    stages:
+    - durationMilliseconds: 14260
+      name: CommitContainer
+      startTime: 2018-08-17T09:00:11Z
+      steps:
+      - durationMilliseconds: 14260
+        name: CommitContainer
+        startTime: 2018-08-17T09:00:11Z
+    - durationMilliseconds: 31353
+      name: Assemble
+      startTime: 2018-08-17T08:59:56Z
+      steps:
+      - durationMilliseconds: 31353
+        name: AssembleBuildScripts
+        startTime: 2018-08-17T08:59:56Z
+    - durationMilliseconds: 16748
+      name: PushImage
+      startTime: 2018-08-17T09:00:27Z
+      steps:
+      - durationMilliseconds: 16748
+        name: PushImage
+        startTime: 2018-08-17T09:00:27Z
+- apiVersion: v1
+  kind: Build
+  metadata:
+    annotations:
+      openshift.io/build-config.name: camel-ose-springboot-xml-s2i
+      openshift.io/build.number: "3"
+      openshift.io/build.pod-name: camel-ose-springboot-xml-s2i-3-build
+    creationTimestamp: null
+    labels:
+      app: camel-ose-springboot-xml
+      buildconfig: camel-ose-springboot-xml-s2i
+      group: org.mycompany
+      openshift.io/build-config.name: camel-ose-springboot-xml-s2i
+      openshift.io/build.start-policy: Serial
+      provider: fabric8
+      version: 1.0.0-SNAPSHOT
+    name: camel-ose-springboot-xml-s2i-3
+    ownerReferences:
+    - apiVersion: build.openshift.io/v1
+      controller: true
+      kind: BuildConfig
+      name: camel-ose-springboot-xml-s2i
+      uid: a3694d15-a1fa-11e8-8784-080027653811
+  spec:
+    nodeSelector: {}
+    output:
+      pushSecret:
+        name: builder-dockercfg-hlkdv
+      to:
+        kind: ImageStreamTag
+        name: camel-ose-springboot-xml:latest
+    postCommit: {}
+    resources: {}
+    serviceAccount: builder
+    source:
+      binary: {}
+      type: Binary
+    strategy:
+      sourceStrategy:
+        from:
+          kind: DockerImage
+          name: registry.access.redhat.com/fuse7/fuse-java-openshift
+      type: Source
+    triggeredBy: null
+  status:
+    config:
+      name: camel-ose-springboot-xml-s2i
+    output:
+      to:
+        imageDigest: sha256:50de0275e97594484eb2955fe7e941f236eed54d54314243d01a9ff84b74abe3
+    outputDockerImageReference: 172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest
+    phase: New
+    stages:
+    - durationMilliseconds: 21566
+      name: CommitContainer
+      startTime: 2018-08-17T09:13:37Z
+      steps:
+      - durationMilliseconds: 21566
+        name: CommitContainer
+        startTime: 2018-08-17T09:13:37Z
+    - durationMilliseconds: 47393
+      name: Assemble
+      startTime: 2018-08-17T09:13:14Z
+      steps:
+      - durationMilliseconds: 47393
+        name: AssembleBuildScripts
+        startTime: 2018-08-17T09:13:14Z
+    - durationMilliseconds: 22409
+      name: PushImage
+      startTime: 2018-08-17T09:14:02Z
+      steps:
+      - durationMilliseconds: 22409
+        name: PushImage
+        startTime: 2018-08-17T09:14:02Z
+- apiVersion: v1
+  kind: Build
+  metadata:
+    annotations:
+      openshift.io/build-config.name: camel-ose-springboot-xml-s2i
+      openshift.io/build.number: "4"
+      openshift.io/build.pod-name: camel-ose-springboot-xml-s2i-4-build
+    creationTimestamp: null
+    labels:
+      app: camel-ose-springboot-xml
+      buildconfig: camel-ose-springboot-xml-s2i
+      group: org.mycompany
+      openshift.io/build-config.name: camel-ose-springboot-xml-s2i
+      openshift.io/build.start-policy: Serial
+      provider: fabric8
+      version: 1.0.0-SNAPSHOT
+    name: camel-ose-springboot-xml-s2i-4
+    ownerReferences:
+    - apiVersion: build.openshift.io/v1
+      controller: true
+      kind: BuildConfig
+      name: camel-ose-springboot-xml-s2i
+      uid: a3694d15-a1fa-11e8-8784-080027653811
+  spec:
+    nodeSelector: {}
+    output:
+      pushSecret:
+        name: builder-dockercfg-hlkdv
+      to:
+        kind: ImageStreamTag
+        name: camel-ose-springboot-xml:latest
+    postCommit: {}
+    resources: {}
+    serviceAccount: builder
+    source:
+      binary: {}
+      type: Binary
+    strategy:
+      sourceStrategy:
+        from:
+          kind: DockerImage
+          name: registry.access.redhat.com/fuse7/fuse-java-openshift
+      type: Source
+    triggeredBy: null
+  status:
+    config:
+      name: camel-ose-springboot-xml-s2i
+    output:
+      to:
+        imageDigest: sha256:79b497270996978d0d6bc3bbc5219bba548d0c0ec7bf6594e9ed6c56a91e6785
+    outputDockerImageReference: 172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest
+    phase: New
+    stages:
+    - durationMilliseconds: 14786
+      name: CommitContainer
+      startTime: 2018-08-17T09:20:16Z
+      steps:
+      - durationMilliseconds: 14786
+        name: CommitContainer
+        startTime: 2018-08-17T09:20:16Z
+    - durationMilliseconds: 53234
+      name: Assemble
+      startTime: 2018-08-17T09:19:40Z
+      steps:
+      - durationMilliseconds: 53234
+        name: AssembleBuildScripts
+        startTime: 2018-08-17T09:19:40Z
+    - durationMilliseconds: 21542
+      name: PushImage
+      startTime: 2018-08-17T09:20:33Z
+      steps:
+      - durationMilliseconds: 21542
+        name: PushImage
+        startTime: 2018-08-17T09:20:33Z
+- apiVersion: v1
+  kind: Build
+  metadata:
+    annotations:
+      openshift.io/build-config.name: customersweb
+      openshift.io/build.number: "1"
+      openshift.io/build.pod-name: customersweb-1-build
+    creationTimestamp: null
+    labels:
+      app: customersweb
+      buildconfig: customersweb
+      openshift.io/build-config.name: customersweb
+      openshift.io/build.start-policy: Serial
+    name: customersweb-1
+    ownerReferences:
+    - apiVersion: build.openshift.io/v1
+      controller: true
+      kind: BuildConfig
+      name: customersweb
+      uid: dbfbfde3-a203-11e8-8784-080027653811
+  spec:
+    nodeSelector: null
+    output:
+      pushSecret:
+        name: builder-dockercfg-hlkdv
+      to:
+        kind: ImageStreamTag
+        name: customersweb:latest
+    postCommit: {}
+    resources: {}
+    revision:
+      git:
+        author:
+          email: mandibuswell@users.noreply.github.com
+          name: mandibuswell
+        commit: 503a2dd2e725b7a38b1b7581ad912d0ca4f8bef2
+        committer:
+          email: noreply@github.com
+          name: GitHub
+        message: update ip address
+      type: Git
+    serviceAccount: builder
+    source:
+      git:
+        ref: master
+        uri: https://github.com/mandibuswell/agile-integration-customers.git
+      type: Git
+    strategy:
+      sourceStrategy:
+        from:
+          kind: DockerImage
+          name: registry.access.redhat.com/rhscl/nodejs-8-rhel7@sha256:7b26a9d8ace47e939a9fcdca61620dbe47d1b936e68983e252cca50991704c7c
+      type: Source
+    triggeredBy:
+    - imageChangeBuild:
+        fromRef:
+          kind: ImageStreamTag
+          name: nodejs:8
+          namespace: openshift
+        imageID: registry.access.redhat.com/rhscl/nodejs-8-rhel7@sha256:7b26a9d8ace47e939a9fcdca61620dbe47d1b936e68983e252cca50991704c7c
+      message: Image change
+  status:
+    config:
+      name: customersweb
+    output:
+      to:
+        imageDigest: sha256:e95d073a9f0079da928774c812cb282c91c3d46e035ceb60b8af873bbbc7f06a
+    outputDockerImageReference: 172.30.1.1:5000/myfuseproject/customersweb:latest
+    phase: New
+    stages:
+    - durationMilliseconds: 7279
+      name: FetchInputs
+      startTime: 2018-08-17T09:56:56Z
+      steps:
+      - durationMilliseconds: 7279
+        name: FetchGitSource
+        startTime: 2018-08-17T09:56:56Z
+    - durationMilliseconds: 4214
+      name: CommitContainer
+      startTime: 2018-08-17T09:58:26Z
+      steps:
+      - durationMilliseconds: 4214
+        name: CommitContainer
+        startTime: 2018-08-17T09:58:26Z
+    - durationMilliseconds: 29722
+      name: Assemble
+      startTime: 2018-08-17T09:58:01Z
+      steps:
+      - durationMilliseconds: 29722
+        name: AssembleBuildScripts
+        startTime: 2018-08-17T09:58:01Z
+    - durationMilliseconds: 61753
+      name: PushImage
+      startTime: 2018-08-17T09:58:31Z
+      steps:
+      - durationMilliseconds: 61753
+        name: PushImage
+        startTime: 2018-08-17T09:58:31Z
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    creationTimestamp: null
+    generation: 1
+    labels:
+      app: camel-ose-springboot-xml
+      group: org.mycompany
+      provider: fabric8
+      version: 1.0.0-SNAPSHOT
+    name: camel-ose-springboot-xml
+  spec:
+    lookupPolicy:
+      local: false
+    tags:
+    - annotations: null
+      from:
+        kind: DockerImage
+        name: 172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest
+      generation: null
+      importPolicy: {}
+      name: latest
+      referencePolicy:
+        type: ""
+  status:
+    dockerImageRepository: ""
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftWebConsole
+    creationTimestamp: null
+    generation: 1
+    labels:
+      app: customersweb
+    name: customersweb
+  spec:
+    lookupPolicy:
+      local: false
+    tags:
+    - annotations: null
+      from:
+        kind: DockerImage
+        name: 172.30.1.1:5000/myfuseproject/customersweb:latest
+      generation: null
+      importPolicy: {}
+      name: latest
+      referencePolicy:
+        type: ""
+  status:
+    dockerImageRepository: ""
+- apiVersion: v1
+  kind: Route
+  metadata:
+    annotations:
+      openshift.io/host.generated: "true"
+    creationTimestamp: null
+    labels:
+      app: camel-ose-springboot-xml
+      expose: "true"
+      group: org.mycompany
+      provider: fabric8
+      version: 1.0.0-SNAPSHOT
+    name: camel-ose-springboot-xml
+  spec:
+    host: camel-ose-springboot-xml-myfuseproject.10.0.2.15.nip.io
+    port:
+      targetPort: 8080
+    to:
+      kind: Service
+      name: camel-ose-springboot-xml
+      weight: 100
+    wildcardPolicy: None
+  status:
+    ingress:
+    - conditions:
+      - lastTransitionTime: 2018-08-17T09:00:55Z
+        status: "True"
+        type: Admitted
+      host: camel-ose-springboot-xml-myfuseproject.10.0.2.15.nip.io
+      routerName: router
+      wildcardPolicy: None
+- apiVersion: v1
+  kind: Route
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftWebConsole
+      openshift.io/host.generated: "true"
+    creationTimestamp: null
+    labels:
+      app: customersweb
+    name: customersweb
+  spec:
+    host: customersweb-myfuseproject.10.0.2.15.nip.io
+    port:
+      targetPort: 8080-tcp
+    to:
+      kind: Service
+      name: customersweb
+      weight: 100
+    wildcardPolicy: None
+  status:
+    ingress:
+    - conditions:
+      - lastTransitionTime: 2018-08-17T09:56:49Z
+        status: "True"
+        type: Admitted
+      host: customersweb-myfuseproject.10.0.2.15.nip.io
+      routerName: router
+      wildcardPolicy: None
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      fabric8.io/iconUrl: img/icons/camel.svg
+      fabric8.io/metrics-path: dashboard/file/camel-routes.json/?var-project=camel-ose-springboot-xml&var-version=1.0.0-SNAPSHOT
+      openshift.io/deployment-config.latest-version: "3"
+      openshift.io/deployment-config.name: camel-ose-springboot-xml
+      openshift.io/deployment.name: camel-ose-springboot-xml-3
+      openshift.io/scc: restricted
+    creationTimestamp: null
+    generateName: camel-ose-springboot-xml-3-
+    labels:
+      app: camel-ose-springboot-xml
+      deployment: camel-ose-springboot-xml-3
+      deploymentconfig: camel-ose-springboot-xml
+      group: org.mycompany
+      provider: fabric8
+      version: 1.0.0-SNAPSHOT
+    ownerReferences:
+    - apiVersion: v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicationController
+      name: camel-ose-springboot-xml-3
+      uid: d8518657-a1fe-11e8-8784-080027653811
+  spec:
+    containers:
+    - env:
+      - name: SPRING_APPLICATION_JSON
+        value: '{"server":{"tomcat":{"max-threads":1}}}'
+      - name: KUBERNETES_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      image: 172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml@sha256:79b497270996978d0d6bc3bbc5219bba548d0c0ec7bf6594e9ed6c56a91e6785
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /health
+          port: 8081
+          scheme: HTTP
+        initialDelaySeconds: 180
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: spring-boot
+      ports:
+      - containerPort: 8080
+        name: http
+        protocol: TCP
+      - containerPort: 9779
+        name: prometheus
+        protocol: TCP
+      - containerPort: 8778
+        name: jolokia
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /health
+          port: 8081
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        limits:
+          cpu: "1"
+        requests:
+          cpu: 200m
+      securityContext:
+        capabilities:
+          drop:
+          - KILL
+          - MKNOD
+          - SETGID
+          - SETUID
+        privileged: false
+        runAsUser: 1000090000
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: default-token-kh2lm
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    imagePullSecrets:
+    - name: default-dockercfg-84fsw
+    nodeName: localhost
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      fsGroup: 1000090000
+      seLinuxOptions:
+        level: s0:c10,c0
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoSchedule
+      key: node.kubernetes.io/memory-pressure
+      operator: Exists
+    volumes:
+    - name: default-token-kh2lm
+      secret:
+        defaultMode: 420
+        secretName: default-token-kh2lm
+  status:
+    phase: Pending
+    qosClass: Burstable
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      openshift.io/build.name: camel-ose-springboot-xml-s2i-1
+      openshift.io/scc: privileged
+    creationTimestamp: null
+    labels:
+      openshift.io/build.name: camel-ose-springboot-xml-s2i-1
+    name: camel-ose-springboot-xml-s2i-1-build
+    ownerReferences:
+    - apiVersion: build.openshift.io/v1
+      controller: true
+      kind: Build
+      name: camel-ose-springboot-xml-s2i-1
+      uid: a571d4c0-a1fa-11e8-8784-080027653811
+  spec:
+    containers:
+    - args:
+      - --loglevel=0
+      command:
+      - openshift-sti-build
+      env:
+      - name: BUILD
+        value: |
+          {"kind":"Build","apiVersion":"v1","metadata":{"name":"camel-ose-springboot-xml-s2i-1","namespace":"myfuseproject","selfLink":"/apis/build.openshift.io/v1/namespaces/myfuseproject/builds/camel-ose-springboot-xml-s2i-1","uid":"a571d4c0-a1fa-11e8-8784-080027653811","resourceVersion":"12519","creationTimestamp":"2018-08-17T08:50:52Z","labels":{"app":"camel-ose-springboot-xml","buildconfig":"camel-ose-springboot-xml-s2i","group":"org.mycompany","openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.start-policy":"Serial","provider":"fabric8","version":"1.0.0-SNAPSHOT"},"annotations":{"openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.number":"1"},"ownerReferences":[{"apiVersion":"build.openshift.io/v1","kind":"BuildConfig","name":"camel-ose-springboot-xml-s2i","uid":"a3694d15-a1fa-11e8-8784-080027653811","controller":true}]},"spec":{"serviceAccount":"builder","source":{"type":"Binary","binary":{}},"strategy":{"type":"Source","sourceStrategy":{"from":{"kind":"DockerImage","name":"registry.access.redhat.com/fuse7/fuse-java-openshift"}}},"output":{"to":{"kind":"DockerImage","name":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest"},"pushSecret":{"name":"builder-dockercfg-hlkdv"}},"resources":{},"postCommit":{},"nodeSelector":{},"triggeredBy":null},"status":{"phase":"New","outputDockerImageReference":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest","config":{"kind":"BuildConfig","namespace":"myfuseproject","name":"camel-ose-springboot-xml-s2i"},"output":{}}}
+      - name: ORIGIN_VERSION
+        value: v3.9.40
+      - name: ALLOWED_UIDS
+        value: 1-
+      - name: DROP_CAPS
+        value: KILL,MKNOD,SETGID,SETUID
+      - name: PUSH_DOCKERCFG_PATH
+        value: /var/run/secrets/openshift.io/push
+      image: registry.access.redhat.com/openshift3/ose-sti-builder:v3.9
+      imagePullPolicy: IfNotPresent
+      name: sti-build
+      resources: {}
+      securityContext:
+        privileged: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+      - mountPath: /tmp/build
+        name: buildworkdir
+      - mountPath: /var/run/docker.sock
+        name: docker-socket
+      - mountPath: /var/run/crio/crio.sock
+        name: crio-socket
+      - mountPath: /var/run/secrets/openshift.io/push
+        name: builder-dockercfg-hlkdv-push
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: builder-token-g52fk
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    imagePullSecrets:
+    - name: builder-dockercfg-hlkdv
+    initContainers:
+    - args:
+      - --loglevel=0
+      command:
+      - openshift-git-clone
+      env:
+      - name: BUILD
+        value: |
+          {"kind":"Build","apiVersion":"v1","metadata":{"name":"camel-ose-springboot-xml-s2i-1","namespace":"myfuseproject","selfLink":"/apis/build.openshift.io/v1/namespaces/myfuseproject/builds/camel-ose-springboot-xml-s2i-1","uid":"a571d4c0-a1fa-11e8-8784-080027653811","resourceVersion":"12519","creationTimestamp":"2018-08-17T08:50:52Z","labels":{"app":"camel-ose-springboot-xml","buildconfig":"camel-ose-springboot-xml-s2i","group":"org.mycompany","openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.start-policy":"Serial","provider":"fabric8","version":"1.0.0-SNAPSHOT"},"annotations":{"openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.number":"1"},"ownerReferences":[{"apiVersion":"build.openshift.io/v1","kind":"BuildConfig","name":"camel-ose-springboot-xml-s2i","uid":"a3694d15-a1fa-11e8-8784-080027653811","controller":true}]},"spec":{"serviceAccount":"builder","source":{"type":"Binary","binary":{}},"strategy":{"type":"Source","sourceStrategy":{"from":{"kind":"DockerImage","name":"registry.access.redhat.com/fuse7/fuse-java-openshift"}}},"output":{"to":{"kind":"DockerImage","name":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest"},"pushSecret":{"name":"builder-dockercfg-hlkdv"}},"resources":{},"postCommit":{},"nodeSelector":{},"triggeredBy":null},"status":{"phase":"New","outputDockerImageReference":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest","config":{"kind":"BuildConfig","namespace":"myfuseproject","name":"camel-ose-springboot-xml-s2i"},"output":{}}}
+      - name: ORIGIN_VERSION
+        value: v3.9.40
+      - name: ALLOWED_UIDS
+        value: 1-
+      - name: DROP_CAPS
+        value: KILL,MKNOD,SETGID,SETUID
+      image: registry.access.redhat.com/openshift3/ose-sti-builder:v3.9
+      imagePullPolicy: IfNotPresent
+      name: git-clone
+      resources: {}
+      stdin: true
+      stdinOnce: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+      - mountPath: /tmp/build
+        name: buildworkdir
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: builder-token-g52fk
+        readOnly: true
+    - args:
+      - --loglevel=0
+      command:
+      - openshift-manage-dockerfile
+      env:
+      - name: BUILD
+        value: |
+          {"kind":"Build","apiVersion":"v1","metadata":{"name":"camel-ose-springboot-xml-s2i-1","namespace":"myfuseproject","selfLink":"/apis/build.openshift.io/v1/namespaces/myfuseproject/builds/camel-ose-springboot-xml-s2i-1","uid":"a571d4c0-a1fa-11e8-8784-080027653811","resourceVersion":"12519","creationTimestamp":"2018-08-17T08:50:52Z","labels":{"app":"camel-ose-springboot-xml","buildconfig":"camel-ose-springboot-xml-s2i","group":"org.mycompany","openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.start-policy":"Serial","provider":"fabric8","version":"1.0.0-SNAPSHOT"},"annotations":{"openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.number":"1"},"ownerReferences":[{"apiVersion":"build.openshift.io/v1","kind":"BuildConfig","name":"camel-ose-springboot-xml-s2i","uid":"a3694d15-a1fa-11e8-8784-080027653811","controller":true}]},"spec":{"serviceAccount":"builder","source":{"type":"Binary","binary":{}},"strategy":{"type":"Source","sourceStrategy":{"from":{"kind":"DockerImage","name":"registry.access.redhat.com/fuse7/fuse-java-openshift"}}},"output":{"to":{"kind":"DockerImage","name":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest"},"pushSecret":{"name":"builder-dockercfg-hlkdv"}},"resources":{},"postCommit":{},"nodeSelector":{},"triggeredBy":null},"status":{"phase":"New","outputDockerImageReference":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest","config":{"kind":"BuildConfig","namespace":"myfuseproject","name":"camel-ose-springboot-xml-s2i"},"output":{}}}
+      - name: ORIGIN_VERSION
+        value: v3.9.40
+      - name: ALLOWED_UIDS
+        value: 1-
+      - name: DROP_CAPS
+        value: KILL,MKNOD,SETGID,SETUID
+      image: registry.access.redhat.com/openshift3/ose-sti-builder:v3.9
+      imagePullPolicy: IfNotPresent
+      name: manage-dockerfile
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+      - mountPath: /tmp/build
+        name: buildworkdir
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: builder-token-g52fk
+        readOnly: true
+    nodeName: localhost
+    restartPolicy: Never
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: builder
+    serviceAccountName: builder
+    terminationGracePeriodSeconds: 30
+    volumes:
+    - emptyDir: {}
+      name: buildworkdir
+    - hostPath:
+        path: /var/run/docker.sock
+        type: ""
+      name: docker-socket
+    - hostPath:
+        path: /var/run/crio/crio.sock
+        type: ""
+      name: crio-socket
+    - name: builder-dockercfg-hlkdv-push
+      secret:
+        defaultMode: 384
+        secretName: builder-dockercfg-hlkdv
+    - name: builder-token-g52fk
+      secret:
+        defaultMode: 420
+        secretName: builder-token-g52fk
+  status:
+    phase: Pending
+    qosClass: BestEffort
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      openshift.io/build.name: camel-ose-springboot-xml-s2i-2
+      openshift.io/scc: privileged
+    creationTimestamp: null
+    labels:
+      openshift.io/build.name: camel-ose-springboot-xml-s2i-2
+    name: camel-ose-springboot-xml-s2i-2-build
+    ownerReferences:
+    - apiVersion: build.openshift.io/v1
+      controller: true
+      kind: Build
+      name: camel-ose-springboot-xml-s2i-2
+      uid: 8e0bcd84-a1fb-11e8-8784-080027653811
+  spec:
+    containers:
+    - args:
+      - --loglevel=0
+      command:
+      - openshift-sti-build
+      env:
+      - name: BUILD
+        value: |
+          {"kind":"Build","apiVersion":"v1","metadata":{"name":"camel-ose-springboot-xml-s2i-2","namespace":"myfuseproject","selfLink":"/apis/build.openshift.io/v1/namespaces/myfuseproject/builds/camel-ose-springboot-xml-s2i-2","uid":"8e0bcd84-a1fb-11e8-8784-080027653811","resourceVersion":"12992","creationTimestamp":"2018-08-17T08:57:22Z","labels":{"app":"camel-ose-springboot-xml","buildconfig":"camel-ose-springboot-xml-s2i","group":"org.mycompany","openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.start-policy":"Serial","provider":"fabric8","version":"1.0.0-SNAPSHOT"},"annotations":{"openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.number":"2"},"ownerReferences":[{"apiVersion":"build.openshift.io/v1","kind":"BuildConfig","name":"camel-ose-springboot-xml-s2i","uid":"a3694d15-a1fa-11e8-8784-080027653811","controller":true}]},"spec":{"serviceAccount":"builder","source":{"type":"Binary","binary":{}},"strategy":{"type":"Source","sourceStrategy":{"from":{"kind":"DockerImage","name":"registry.access.redhat.com/fuse7/fuse-java-openshift"}}},"output":{"to":{"kind":"DockerImage","name":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest"},"pushSecret":{"name":"builder-dockercfg-hlkdv"}},"resources":{},"postCommit":{},"nodeSelector":{},"triggeredBy":null},"status":{"phase":"New","outputDockerImageReference":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest","config":{"kind":"BuildConfig","namespace":"myfuseproject","name":"camel-ose-springboot-xml-s2i"},"output":{}}}
+      - name: ORIGIN_VERSION
+        value: v3.9.40
+      - name: ALLOWED_UIDS
+        value: 1-
+      - name: DROP_CAPS
+        value: KILL,MKNOD,SETGID,SETUID
+      - name: PUSH_DOCKERCFG_PATH
+        value: /var/run/secrets/openshift.io/push
+      image: registry.access.redhat.com/openshift3/ose-sti-builder:v3.9
+      imagePullPolicy: IfNotPresent
+      name: sti-build
+      resources: {}
+      securityContext:
+        privileged: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+      - mountPath: /tmp/build
+        name: buildworkdir
+      - mountPath: /var/run/docker.sock
+        name: docker-socket
+      - mountPath: /var/run/crio/crio.sock
+        name: crio-socket
+      - mountPath: /var/run/secrets/openshift.io/push
+        name: builder-dockercfg-hlkdv-push
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: builder-token-g52fk
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    imagePullSecrets:
+    - name: builder-dockercfg-hlkdv
+    initContainers:
+    - args:
+      - --loglevel=0
+      command:
+      - openshift-git-clone
+      env:
+      - name: BUILD
+        value: |
+          {"kind":"Build","apiVersion":"v1","metadata":{"name":"camel-ose-springboot-xml-s2i-2","namespace":"myfuseproject","selfLink":"/apis/build.openshift.io/v1/namespaces/myfuseproject/builds/camel-ose-springboot-xml-s2i-2","uid":"8e0bcd84-a1fb-11e8-8784-080027653811","resourceVersion":"12992","creationTimestamp":"2018-08-17T08:57:22Z","labels":{"app":"camel-ose-springboot-xml","buildconfig":"camel-ose-springboot-xml-s2i","group":"org.mycompany","openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.start-policy":"Serial","provider":"fabric8","version":"1.0.0-SNAPSHOT"},"annotations":{"openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.number":"2"},"ownerReferences":[{"apiVersion":"build.openshift.io/v1","kind":"BuildConfig","name":"camel-ose-springboot-xml-s2i","uid":"a3694d15-a1fa-11e8-8784-080027653811","controller":true}]},"spec":{"serviceAccount":"builder","source":{"type":"Binary","binary":{}},"strategy":{"type":"Source","sourceStrategy":{"from":{"kind":"DockerImage","name":"registry.access.redhat.com/fuse7/fuse-java-openshift"}}},"output":{"to":{"kind":"DockerImage","name":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest"},"pushSecret":{"name":"builder-dockercfg-hlkdv"}},"resources":{},"postCommit":{},"nodeSelector":{},"triggeredBy":null},"status":{"phase":"New","outputDockerImageReference":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest","config":{"kind":"BuildConfig","namespace":"myfuseproject","name":"camel-ose-springboot-xml-s2i"},"output":{}}}
+      - name: ORIGIN_VERSION
+        value: v3.9.40
+      - name: ALLOWED_UIDS
+        value: 1-
+      - name: DROP_CAPS
+        value: KILL,MKNOD,SETGID,SETUID
+      image: registry.access.redhat.com/openshift3/ose-sti-builder:v3.9
+      imagePullPolicy: IfNotPresent
+      name: git-clone
+      resources: {}
+      stdin: true
+      stdinOnce: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+      - mountPath: /tmp/build
+        name: buildworkdir
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: builder-token-g52fk
+        readOnly: true
+    - args:
+      - --loglevel=0
+      command:
+      - openshift-manage-dockerfile
+      env:
+      - name: BUILD
+        value: |
+          {"kind":"Build","apiVersion":"v1","metadata":{"name":"camel-ose-springboot-xml-s2i-2","namespace":"myfuseproject","selfLink":"/apis/build.openshift.io/v1/namespaces/myfuseproject/builds/camel-ose-springboot-xml-s2i-2","uid":"8e0bcd84-a1fb-11e8-8784-080027653811","resourceVersion":"12992","creationTimestamp":"2018-08-17T08:57:22Z","labels":{"app":"camel-ose-springboot-xml","buildconfig":"camel-ose-springboot-xml-s2i","group":"org.mycompany","openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.start-policy":"Serial","provider":"fabric8","version":"1.0.0-SNAPSHOT"},"annotations":{"openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.number":"2"},"ownerReferences":[{"apiVersion":"build.openshift.io/v1","kind":"BuildConfig","name":"camel-ose-springboot-xml-s2i","uid":"a3694d15-a1fa-11e8-8784-080027653811","controller":true}]},"spec":{"serviceAccount":"builder","source":{"type":"Binary","binary":{}},"strategy":{"type":"Source","sourceStrategy":{"from":{"kind":"DockerImage","name":"registry.access.redhat.com/fuse7/fuse-java-openshift"}}},"output":{"to":{"kind":"DockerImage","name":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest"},"pushSecret":{"name":"builder-dockercfg-hlkdv"}},"resources":{},"postCommit":{},"nodeSelector":{},"triggeredBy":null},"status":{"phase":"New","outputDockerImageReference":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest","config":{"kind":"BuildConfig","namespace":"myfuseproject","name":"camel-ose-springboot-xml-s2i"},"output":{}}}
+      - name: ORIGIN_VERSION
+        value: v3.9.40
+      - name: ALLOWED_UIDS
+        value: 1-
+      - name: DROP_CAPS
+        value: KILL,MKNOD,SETGID,SETUID
+      image: registry.access.redhat.com/openshift3/ose-sti-builder:v3.9
+      imagePullPolicy: IfNotPresent
+      name: manage-dockerfile
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+      - mountPath: /tmp/build
+        name: buildworkdir
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: builder-token-g52fk
+        readOnly: true
+    nodeName: localhost
+    restartPolicy: Never
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: builder
+    serviceAccountName: builder
+    terminationGracePeriodSeconds: 30
+    volumes:
+    - emptyDir: {}
+      name: buildworkdir
+    - hostPath:
+        path: /var/run/docker.sock
+        type: ""
+      name: docker-socket
+    - hostPath:
+        path: /var/run/crio/crio.sock
+        type: ""
+      name: crio-socket
+    - name: builder-dockercfg-hlkdv-push
+      secret:
+        defaultMode: 384
+        secretName: builder-dockercfg-hlkdv
+    - name: builder-token-g52fk
+      secret:
+        defaultMode: 420
+        secretName: builder-token-g52fk
+  status:
+    phase: Pending
+    qosClass: BestEffort
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      openshift.io/build.name: camel-ose-springboot-xml-s2i-3
+      openshift.io/scc: privileged
+    creationTimestamp: null
+    labels:
+      openshift.io/build.name: camel-ose-springboot-xml-s2i-3
+    name: camel-ose-springboot-xml-s2i-3-build
+    ownerReferences:
+    - apiVersion: build.openshift.io/v1
+      controller: true
+      kind: Build
+      name: camel-ose-springboot-xml-s2i-3
+      uid: a58a5026-a1fd-11e8-8784-080027653811
+  spec:
+    containers:
+    - args:
+      - --loglevel=0
+      command:
+      - openshift-sti-build
+      env:
+      - name: BUILD
+        value: |
+          {"kind":"Build","apiVersion":"v1","metadata":{"name":"camel-ose-springboot-xml-s2i-3","namespace":"myfuseproject","selfLink":"/apis/build.openshift.io/v1/namespaces/myfuseproject/builds/camel-ose-springboot-xml-s2i-3","uid":"a58a5026-a1fd-11e8-8784-080027653811","resourceVersion":"14243","creationTimestamp":"2018-08-17T09:12:21Z","labels":{"app":"camel-ose-springboot-xml","buildconfig":"camel-ose-springboot-xml-s2i","group":"org.mycompany","openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.start-policy":"Serial","provider":"fabric8","version":"1.0.0-SNAPSHOT"},"annotations":{"openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.number":"3"},"ownerReferences":[{"apiVersion":"build.openshift.io/v1","kind":"BuildConfig","name":"camel-ose-springboot-xml-s2i","uid":"a3694d15-a1fa-11e8-8784-080027653811","controller":true}]},"spec":{"serviceAccount":"builder","source":{"type":"Binary","binary":{}},"strategy":{"type":"Source","sourceStrategy":{"from":{"kind":"DockerImage","name":"registry.access.redhat.com/fuse7/fuse-java-openshift"}}},"output":{"to":{"kind":"DockerImage","name":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest"},"pushSecret":{"name":"builder-dockercfg-hlkdv"}},"resources":{},"postCommit":{},"nodeSelector":{},"triggeredBy":null},"status":{"phase":"New","outputDockerImageReference":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest","config":{"kind":"BuildConfig","namespace":"myfuseproject","name":"camel-ose-springboot-xml-s2i"},"output":{}}}
+      - name: ORIGIN_VERSION
+        value: v3.9.40
+      - name: ALLOWED_UIDS
+        value: 1-
+      - name: DROP_CAPS
+        value: KILL,MKNOD,SETGID,SETUID
+      - name: PUSH_DOCKERCFG_PATH
+        value: /var/run/secrets/openshift.io/push
+      image: registry.access.redhat.com/openshift3/ose-sti-builder:v3.9
+      imagePullPolicy: IfNotPresent
+      name: sti-build
+      resources: {}
+      securityContext:
+        privileged: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+      - mountPath: /tmp/build
+        name: buildworkdir
+      - mountPath: /var/run/docker.sock
+        name: docker-socket
+      - mountPath: /var/run/crio/crio.sock
+        name: crio-socket
+      - mountPath: /var/run/secrets/openshift.io/push
+        name: builder-dockercfg-hlkdv-push
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: builder-token-g52fk
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    imagePullSecrets:
+    - name: builder-dockercfg-hlkdv
+    initContainers:
+    - args:
+      - --loglevel=0
+      command:
+      - openshift-git-clone
+      env:
+      - name: BUILD
+        value: |
+          {"kind":"Build","apiVersion":"v1","metadata":{"name":"camel-ose-springboot-xml-s2i-3","namespace":"myfuseproject","selfLink":"/apis/build.openshift.io/v1/namespaces/myfuseproject/builds/camel-ose-springboot-xml-s2i-3","uid":"a58a5026-a1fd-11e8-8784-080027653811","resourceVersion":"14243","creationTimestamp":"2018-08-17T09:12:21Z","labels":{"app":"camel-ose-springboot-xml","buildconfig":"camel-ose-springboot-xml-s2i","group":"org.mycompany","openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.start-policy":"Serial","provider":"fabric8","version":"1.0.0-SNAPSHOT"},"annotations":{"openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.number":"3"},"ownerReferences":[{"apiVersion":"build.openshift.io/v1","kind":"BuildConfig","name":"camel-ose-springboot-xml-s2i","uid":"a3694d15-a1fa-11e8-8784-080027653811","controller":true}]},"spec":{"serviceAccount":"builder","source":{"type":"Binary","binary":{}},"strategy":{"type":"Source","sourceStrategy":{"from":{"kind":"DockerImage","name":"registry.access.redhat.com/fuse7/fuse-java-openshift"}}},"output":{"to":{"kind":"DockerImage","name":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest"},"pushSecret":{"name":"builder-dockercfg-hlkdv"}},"resources":{},"postCommit":{},"nodeSelector":{},"triggeredBy":null},"status":{"phase":"New","outputDockerImageReference":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest","config":{"kind":"BuildConfig","namespace":"myfuseproject","name":"camel-ose-springboot-xml-s2i"},"output":{}}}
+      - name: ORIGIN_VERSION
+        value: v3.9.40
+      - name: ALLOWED_UIDS
+        value: 1-
+      - name: DROP_CAPS
+        value: KILL,MKNOD,SETGID,SETUID
+      image: registry.access.redhat.com/openshift3/ose-sti-builder:v3.9
+      imagePullPolicy: IfNotPresent
+      name: git-clone
+      resources: {}
+      stdin: true
+      stdinOnce: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+      - mountPath: /tmp/build
+        name: buildworkdir
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: builder-token-g52fk
+        readOnly: true
+    - args:
+      - --loglevel=0
+      command:
+      - openshift-manage-dockerfile
+      env:
+      - name: BUILD
+        value: |
+          {"kind":"Build","apiVersion":"v1","metadata":{"name":"camel-ose-springboot-xml-s2i-3","namespace":"myfuseproject","selfLink":"/apis/build.openshift.io/v1/namespaces/myfuseproject/builds/camel-ose-springboot-xml-s2i-3","uid":"a58a5026-a1fd-11e8-8784-080027653811","resourceVersion":"14243","creationTimestamp":"2018-08-17T09:12:21Z","labels":{"app":"camel-ose-springboot-xml","buildconfig":"camel-ose-springboot-xml-s2i","group":"org.mycompany","openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.start-policy":"Serial","provider":"fabric8","version":"1.0.0-SNAPSHOT"},"annotations":{"openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.number":"3"},"ownerReferences":[{"apiVersion":"build.openshift.io/v1","kind":"BuildConfig","name":"camel-ose-springboot-xml-s2i","uid":"a3694d15-a1fa-11e8-8784-080027653811","controller":true}]},"spec":{"serviceAccount":"builder","source":{"type":"Binary","binary":{}},"strategy":{"type":"Source","sourceStrategy":{"from":{"kind":"DockerImage","name":"registry.access.redhat.com/fuse7/fuse-java-openshift"}}},"output":{"to":{"kind":"DockerImage","name":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest"},"pushSecret":{"name":"builder-dockercfg-hlkdv"}},"resources":{},"postCommit":{},"nodeSelector":{},"triggeredBy":null},"status":{"phase":"New","outputDockerImageReference":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest","config":{"kind":"BuildConfig","namespace":"myfuseproject","name":"camel-ose-springboot-xml-s2i"},"output":{}}}
+      - name: ORIGIN_VERSION
+        value: v3.9.40
+      - name: ALLOWED_UIDS
+        value: 1-
+      - name: DROP_CAPS
+        value: KILL,MKNOD,SETGID,SETUID
+      image: registry.access.redhat.com/openshift3/ose-sti-builder:v3.9
+      imagePullPolicy: IfNotPresent
+      name: manage-dockerfile
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+      - mountPath: /tmp/build
+        name: buildworkdir
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: builder-token-g52fk
+        readOnly: true
+    nodeName: localhost
+    restartPolicy: Never
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: builder
+    serviceAccountName: builder
+    terminationGracePeriodSeconds: 30
+    volumes:
+    - emptyDir: {}
+      name: buildworkdir
+    - hostPath:
+        path: /var/run/docker.sock
+        type: ""
+      name: docker-socket
+    - hostPath:
+        path: /var/run/crio/crio.sock
+        type: ""
+      name: crio-socket
+    - name: builder-dockercfg-hlkdv-push
+      secret:
+        defaultMode: 384
+        secretName: builder-dockercfg-hlkdv
+    - name: builder-token-g52fk
+      secret:
+        defaultMode: 420
+        secretName: builder-token-g52fk
+  status:
+    phase: Pending
+    qosClass: BestEffort
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      openshift.io/build.name: camel-ose-springboot-xml-s2i-4
+      openshift.io/scc: privileged
+    creationTimestamp: null
+    labels:
+      openshift.io/build.name: camel-ose-springboot-xml-s2i-4
+    name: camel-ose-springboot-xml-s2i-4-build
+    ownerReferences:
+    - apiVersion: build.openshift.io/v1
+      controller: true
+      kind: Build
+      name: camel-ose-springboot-xml-s2i-4
+      uid: 0f250124-a1fe-11e8-8784-080027653811
+  spec:
+    containers:
+    - args:
+      - --loglevel=0
+      command:
+      - openshift-sti-build
+      env:
+      - name: BUILD
+        value: |
+          {"kind":"Build","apiVersion":"v1","metadata":{"name":"camel-ose-springboot-xml-s2i-4","namespace":"myfuseproject","selfLink":"/apis/build.openshift.io/v1/namespaces/myfuseproject/builds/camel-ose-springboot-xml-s2i-4","uid":"0f250124-a1fe-11e8-8784-080027653811","resourceVersion":"14484","creationTimestamp":"2018-08-17T09:15:18Z","labels":{"app":"camel-ose-springboot-xml","buildconfig":"camel-ose-springboot-xml-s2i","group":"org.mycompany","openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.start-policy":"Serial","provider":"fabric8","version":"1.0.0-SNAPSHOT"},"annotations":{"openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.number":"4"},"ownerReferences":[{"apiVersion":"build.openshift.io/v1","kind":"BuildConfig","name":"camel-ose-springboot-xml-s2i","uid":"a3694d15-a1fa-11e8-8784-080027653811","controller":true}]},"spec":{"serviceAccount":"builder","source":{"type":"Binary","binary":{}},"strategy":{"type":"Source","sourceStrategy":{"from":{"kind":"DockerImage","name":"registry.access.redhat.com/fuse7/fuse-java-openshift"}}},"output":{"to":{"kind":"DockerImage","name":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest"},"pushSecret":{"name":"builder-dockercfg-hlkdv"}},"resources":{},"postCommit":{},"nodeSelector":{},"triggeredBy":null},"status":{"phase":"New","outputDockerImageReference":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest","config":{"kind":"BuildConfig","namespace":"myfuseproject","name":"camel-ose-springboot-xml-s2i"},"output":{}}}
+      - name: ORIGIN_VERSION
+        value: v3.9.40
+      - name: ALLOWED_UIDS
+        value: 1-
+      - name: DROP_CAPS
+        value: KILL,MKNOD,SETGID,SETUID
+      - name: PUSH_DOCKERCFG_PATH
+        value: /var/run/secrets/openshift.io/push
+      image: registry.access.redhat.com/openshift3/ose-sti-builder:v3.9
+      imagePullPolicy: IfNotPresent
+      name: sti-build
+      resources: {}
+      securityContext:
+        privileged: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+      - mountPath: /tmp/build
+        name: buildworkdir
+      - mountPath: /var/run/docker.sock
+        name: docker-socket
+      - mountPath: /var/run/crio/crio.sock
+        name: crio-socket
+      - mountPath: /var/run/secrets/openshift.io/push
+        name: builder-dockercfg-hlkdv-push
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: builder-token-g52fk
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    imagePullSecrets:
+    - name: builder-dockercfg-hlkdv
+    initContainers:
+    - args:
+      - --loglevel=0
+      command:
+      - openshift-git-clone
+      env:
+      - name: BUILD
+        value: |
+          {"kind":"Build","apiVersion":"v1","metadata":{"name":"camel-ose-springboot-xml-s2i-4","namespace":"myfuseproject","selfLink":"/apis/build.openshift.io/v1/namespaces/myfuseproject/builds/camel-ose-springboot-xml-s2i-4","uid":"0f250124-a1fe-11e8-8784-080027653811","resourceVersion":"14484","creationTimestamp":"2018-08-17T09:15:18Z","labels":{"app":"camel-ose-springboot-xml","buildconfig":"camel-ose-springboot-xml-s2i","group":"org.mycompany","openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.start-policy":"Serial","provider":"fabric8","version":"1.0.0-SNAPSHOT"},"annotations":{"openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.number":"4"},"ownerReferences":[{"apiVersion":"build.openshift.io/v1","kind":"BuildConfig","name":"camel-ose-springboot-xml-s2i","uid":"a3694d15-a1fa-11e8-8784-080027653811","controller":true}]},"spec":{"serviceAccount":"builder","source":{"type":"Binary","binary":{}},"strategy":{"type":"Source","sourceStrategy":{"from":{"kind":"DockerImage","name":"registry.access.redhat.com/fuse7/fuse-java-openshift"}}},"output":{"to":{"kind":"DockerImage","name":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest"},"pushSecret":{"name":"builder-dockercfg-hlkdv"}},"resources":{},"postCommit":{},"nodeSelector":{},"triggeredBy":null},"status":{"phase":"New","outputDockerImageReference":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest","config":{"kind":"BuildConfig","namespace":"myfuseproject","name":"camel-ose-springboot-xml-s2i"},"output":{}}}
+      - name: ORIGIN_VERSION
+        value: v3.9.40
+      - name: ALLOWED_UIDS
+        value: 1-
+      - name: DROP_CAPS
+        value: KILL,MKNOD,SETGID,SETUID
+      image: registry.access.redhat.com/openshift3/ose-sti-builder:v3.9
+      imagePullPolicy: IfNotPresent
+      name: git-clone
+      resources: {}
+      stdin: true
+      stdinOnce: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+      - mountPath: /tmp/build
+        name: buildworkdir
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: builder-token-g52fk
+        readOnly: true
+    - args:
+      - --loglevel=0
+      command:
+      - openshift-manage-dockerfile
+      env:
+      - name: BUILD
+        value: |
+          {"kind":"Build","apiVersion":"v1","metadata":{"name":"camel-ose-springboot-xml-s2i-4","namespace":"myfuseproject","selfLink":"/apis/build.openshift.io/v1/namespaces/myfuseproject/builds/camel-ose-springboot-xml-s2i-4","uid":"0f250124-a1fe-11e8-8784-080027653811","resourceVersion":"14484","creationTimestamp":"2018-08-17T09:15:18Z","labels":{"app":"camel-ose-springboot-xml","buildconfig":"camel-ose-springboot-xml-s2i","group":"org.mycompany","openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.start-policy":"Serial","provider":"fabric8","version":"1.0.0-SNAPSHOT"},"annotations":{"openshift.io/build-config.name":"camel-ose-springboot-xml-s2i","openshift.io/build.number":"4"},"ownerReferences":[{"apiVersion":"build.openshift.io/v1","kind":"BuildConfig","name":"camel-ose-springboot-xml-s2i","uid":"a3694d15-a1fa-11e8-8784-080027653811","controller":true}]},"spec":{"serviceAccount":"builder","source":{"type":"Binary","binary":{}},"strategy":{"type":"Source","sourceStrategy":{"from":{"kind":"DockerImage","name":"registry.access.redhat.com/fuse7/fuse-java-openshift"}}},"output":{"to":{"kind":"DockerImage","name":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest"},"pushSecret":{"name":"builder-dockercfg-hlkdv"}},"resources":{},"postCommit":{},"nodeSelector":{},"triggeredBy":null},"status":{"phase":"New","outputDockerImageReference":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml:latest","config":{"kind":"BuildConfig","namespace":"myfuseproject","name":"camel-ose-springboot-xml-s2i"},"output":{}}}
+      - name: ORIGIN_VERSION
+        value: v3.9.40
+      - name: ALLOWED_UIDS
+        value: 1-
+      - name: DROP_CAPS
+        value: KILL,MKNOD,SETGID,SETUID
+      image: registry.access.redhat.com/openshift3/ose-sti-builder:v3.9
+      imagePullPolicy: IfNotPresent
+      name: manage-dockerfile
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+      - mountPath: /tmp/build
+        name: buildworkdir
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: builder-token-g52fk
+        readOnly: true
+    nodeName: localhost
+    restartPolicy: Never
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: builder
+    serviceAccountName: builder
+    terminationGracePeriodSeconds: 30
+    volumes:
+    - emptyDir: {}
+      name: buildworkdir
+    - hostPath:
+        path: /var/run/docker.sock
+        type: ""
+      name: docker-socket
+    - hostPath:
+        path: /var/run/crio/crio.sock
+        type: ""
+      name: crio-socket
+    - name: builder-dockercfg-hlkdv-push
+      secret:
+        defaultMode: 384
+        secretName: builder-dockercfg-hlkdv
+    - name: builder-token-g52fk
+      secret:
+        defaultMode: 420
+        secretName: builder-token-g52fk
+  status:
+    phase: Pending
+    qosClass: BestEffort
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      openshift.io/deployment-config.latest-version: "1"
+      openshift.io/deployment-config.name: customersweb
+      openshift.io/deployment.name: customersweb-1
+      openshift.io/scc: restricted
+    creationTimestamp: null
+    generateName: customersweb-1-
+    labels:
+      app: customersweb
+      deployment: customersweb-1
+      deploymentconfig: customersweb
+    ownerReferences:
+    - apiVersion: v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicationController
+      name: customersweb-1
+      uid: 3d739df6-a204-11e8-8784-080027653811
+  spec:
+    containers:
+    - image: 172.30.1.1:5000/myfuseproject/customersweb@sha256:e95d073a9f0079da928774c812cb282c91c3d46e035ceb60b8af873bbbc7f06a
+      imagePullPolicy: Always
+      name: customersweb
+      ports:
+      - containerPort: 8080
+        protocol: TCP
+      resources: {}
+      securityContext:
+        capabilities:
+          drop:
+          - KILL
+          - MKNOD
+          - SETGID
+          - SETUID
+        runAsUser: 1000090000
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: default-token-kh2lm
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    imagePullSecrets:
+    - name: default-dockercfg-84fsw
+    nodeName: localhost
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      fsGroup: 1000090000
+      seLinuxOptions:
+        level: s0:c10,c0
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    volumes:
+    - name: default-token-kh2lm
+      secret:
+        defaultMode: 420
+        secretName: default-token-kh2lm
+  status:
+    phase: Pending
+    qosClass: BestEffort
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      openshift.io/deployment-config.latest-version: "1"
+      openshift.io/deployment-config.name: customersweb
+      openshift.io/deployment.name: customersweb-1
+      openshift.io/scc: restricted
+    creationTimestamp: null
+    generateName: customersweb-1-
+    labels:
+      app: customersweb
+      deployment: customersweb-1
+      deploymentconfig: customersweb
+    ownerReferences:
+    - apiVersion: v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicationController
+      name: customersweb-1
+      uid: 3d739df6-a204-11e8-8784-080027653811
+  spec:
+    containers:
+    - image: 172.30.1.1:5000/myfuseproject/customersweb@sha256:e95d073a9f0079da928774c812cb282c91c3d46e035ceb60b8af873bbbc7f06a
+      imagePullPolicy: Always
+      name: customersweb
+      ports:
+      - containerPort: 8080
+        protocol: TCP
+      resources: {}
+      securityContext:
+        capabilities:
+          drop:
+          - KILL
+          - MKNOD
+          - SETGID
+          - SETUID
+        runAsUser: 1000090000
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: default-token-kh2lm
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    imagePullSecrets:
+    - name: default-dockercfg-84fsw
+    nodeName: localhost
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      fsGroup: 1000090000
+      seLinuxOptions:
+        level: s0:c10,c0
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    volumes:
+    - name: default-token-kh2lm
+      secret:
+        defaultMode: 420
+        secretName: default-token-kh2lm
+  status:
+    phase: Pending
+    qosClass: BestEffort
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      openshift.io/deployment-config.latest-version: "1"
+      openshift.io/deployment-config.name: customersweb
+      openshift.io/deployment.name: customersweb-1
+      openshift.io/scc: restricted
+    creationTimestamp: null
+    generateName: customersweb-1-
+    labels:
+      app: customersweb
+      deployment: customersweb-1
+      deploymentconfig: customersweb
+    ownerReferences:
+    - apiVersion: v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicationController
+      name: customersweb-1
+      uid: 3d739df6-a204-11e8-8784-080027653811
+  spec:
+    containers:
+    - image: 172.30.1.1:5000/myfuseproject/customersweb@sha256:e95d073a9f0079da928774c812cb282c91c3d46e035ceb60b8af873bbbc7f06a
+      imagePullPolicy: Always
+      name: customersweb
+      ports:
+      - containerPort: 8080
+        protocol: TCP
+      resources: {}
+      securityContext:
+        capabilities:
+          drop:
+          - KILL
+          - MKNOD
+          - SETGID
+          - SETUID
+        runAsUser: 1000090000
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: default-token-kh2lm
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    imagePullSecrets:
+    - name: default-dockercfg-84fsw
+    nodeName: localhost
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      fsGroup: 1000090000
+      seLinuxOptions:
+        level: s0:c10,c0
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    volumes:
+    - name: default-token-kh2lm
+      secret:
+        defaultMode: 420
+        secretName: default-token-kh2lm
+  status:
+    phase: Pending
+    qosClass: BestEffort
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      openshift.io/build.name: customersweb-1
+      openshift.io/scc: privileged
+    creationTimestamp: null
+    labels:
+      openshift.io/build.name: customersweb-1
+    name: customersweb-1-build
+    ownerReferences:
+    - apiVersion: build.openshift.io/v1
+      controller: true
+      kind: Build
+      name: customersweb-1
+      uid: dc1cf7f5-a203-11e8-8784-080027653811
+  spec:
+    containers:
+    - args:
+      - --loglevel=0
+      command:
+      - openshift-sti-build
+      env:
+      - name: BUILD
+        value: |
+          {"kind":"Build","apiVersion":"v1","metadata":{"name":"customersweb-1","namespace":"myfuseproject","selfLink":"/apis/build.openshift.io/v1/namespaces/myfuseproject/builds/customersweb-1","uid":"dc1cf7f5-a203-11e8-8784-080027653811","resourceVersion":"17740","creationTimestamp":"2018-08-17T09:56:49Z","labels":{"app":"customersweb","buildconfig":"customersweb","openshift.io/build-config.name":"customersweb","openshift.io/build.start-policy":"Serial"},"annotations":{"openshift.io/build-config.name":"customersweb","openshift.io/build.number":"1"},"ownerReferences":[{"apiVersion":"build.openshift.io/v1","kind":"BuildConfig","name":"customersweb","uid":"dbfbfde3-a203-11e8-8784-080027653811","controller":true}]},"spec":{"serviceAccount":"builder","source":{"type":"Git","git":{"uri":"https://github.com/mandibuswell/agile-integration-customers.git","ref":"master"}},"strategy":{"type":"Source","sourceStrategy":{"from":{"kind":"DockerImage","name":"registry.access.redhat.com/rhscl/nodejs-8-rhel7@sha256:7b26a9d8ace47e939a9fcdca61620dbe47d1b936e68983e252cca50991704c7c"}}},"output":{"to":{"kind":"DockerImage","name":"172.30.1.1:5000/myfuseproject/customersweb:latest"},"pushSecret":{"name":"builder-dockercfg-hlkdv"}},"resources":{},"postCommit":{},"nodeSelector":null,"triggeredBy":[{"message":"Image change","imageChangeBuild":{"imageID":"registry.access.redhat.com/rhscl/nodejs-8-rhel7@sha256:7b26a9d8ace47e939a9fcdca61620dbe47d1b936e68983e252cca50991704c7c","fromRef":{"kind":"ImageStreamTag","namespace":"openshift","name":"nodejs:8"}}}]},"status":{"phase":"New","outputDockerImageReference":"172.30.1.1:5000/myfuseproject/customersweb:latest","config":{"kind":"BuildConfig","namespace":"myfuseproject","name":"customersweb"},"output":{}}}
+      - name: SOURCE_REPOSITORY
+        value: https://github.com/mandibuswell/agile-integration-customers.git
+      - name: SOURCE_URI
+        value: https://github.com/mandibuswell/agile-integration-customers.git
+      - name: SOURCE_REF
+        value: master
+      - name: ORIGIN_VERSION
+        value: v3.9.40
+      - name: ALLOWED_UIDS
+        value: 1-
+      - name: DROP_CAPS
+        value: KILL,MKNOD,SETGID,SETUID
+      - name: PUSH_DOCKERCFG_PATH
+        value: /var/run/secrets/openshift.io/push
+      image: registry.access.redhat.com/openshift3/ose-sti-builder:v3.9
+      imagePullPolicy: IfNotPresent
+      name: sti-build
+      resources: {}
+      securityContext:
+        privileged: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+      - mountPath: /tmp/build
+        name: buildworkdir
+      - mountPath: /var/run/docker.sock
+        name: docker-socket
+      - mountPath: /var/run/crio/crio.sock
+        name: crio-socket
+      - mountPath: /var/run/secrets/openshift.io/push
+        name: builder-dockercfg-hlkdv-push
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: builder-token-g52fk
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    imagePullSecrets:
+    - name: builder-dockercfg-hlkdv
+    initContainers:
+    - args:
+      - --loglevel=0
+      command:
+      - openshift-git-clone
+      env:
+      - name: BUILD
+        value: |
+          {"kind":"Build","apiVersion":"v1","metadata":{"name":"customersweb-1","namespace":"myfuseproject","selfLink":"/apis/build.openshift.io/v1/namespaces/myfuseproject/builds/customersweb-1","uid":"dc1cf7f5-a203-11e8-8784-080027653811","resourceVersion":"17740","creationTimestamp":"2018-08-17T09:56:49Z","labels":{"app":"customersweb","buildconfig":"customersweb","openshift.io/build-config.name":"customersweb","openshift.io/build.start-policy":"Serial"},"annotations":{"openshift.io/build-config.name":"customersweb","openshift.io/build.number":"1"},"ownerReferences":[{"apiVersion":"build.openshift.io/v1","kind":"BuildConfig","name":"customersweb","uid":"dbfbfde3-a203-11e8-8784-080027653811","controller":true}]},"spec":{"serviceAccount":"builder","source":{"type":"Git","git":{"uri":"https://github.com/mandibuswell/agile-integration-customers.git","ref":"master"}},"strategy":{"type":"Source","sourceStrategy":{"from":{"kind":"DockerImage","name":"registry.access.redhat.com/rhscl/nodejs-8-rhel7@sha256:7b26a9d8ace47e939a9fcdca61620dbe47d1b936e68983e252cca50991704c7c"}}},"output":{"to":{"kind":"DockerImage","name":"172.30.1.1:5000/myfuseproject/customersweb:latest"},"pushSecret":{"name":"builder-dockercfg-hlkdv"}},"resources":{},"postCommit":{},"nodeSelector":null,"triggeredBy":[{"message":"Image change","imageChangeBuild":{"imageID":"registry.access.redhat.com/rhscl/nodejs-8-rhel7@sha256:7b26a9d8ace47e939a9fcdca61620dbe47d1b936e68983e252cca50991704c7c","fromRef":{"kind":"ImageStreamTag","namespace":"openshift","name":"nodejs:8"}}}]},"status":{"phase":"New","outputDockerImageReference":"172.30.1.1:5000/myfuseproject/customersweb:latest","config":{"kind":"BuildConfig","namespace":"myfuseproject","name":"customersweb"},"output":{}}}
+      - name: SOURCE_REPOSITORY
+        value: https://github.com/mandibuswell/agile-integration-customers.git
+      - name: SOURCE_URI
+        value: https://github.com/mandibuswell/agile-integration-customers.git
+      - name: SOURCE_REF
+        value: master
+      - name: ORIGIN_VERSION
+        value: v3.9.40
+      - name: ALLOWED_UIDS
+        value: 1-
+      - name: DROP_CAPS
+        value: KILL,MKNOD,SETGID,SETUID
+      image: registry.access.redhat.com/openshift3/ose-sti-builder:v3.9
+      imagePullPolicy: IfNotPresent
+      name: git-clone
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+      - mountPath: /tmp/build
+        name: buildworkdir
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: builder-token-g52fk
+        readOnly: true
+    - args:
+      - --loglevel=0
+      command:
+      - openshift-manage-dockerfile
+      env:
+      - name: BUILD
+        value: |
+          {"kind":"Build","apiVersion":"v1","metadata":{"name":"customersweb-1","namespace":"myfuseproject","selfLink":"/apis/build.openshift.io/v1/namespaces/myfuseproject/builds/customersweb-1","uid":"dc1cf7f5-a203-11e8-8784-080027653811","resourceVersion":"17740","creationTimestamp":"2018-08-17T09:56:49Z","labels":{"app":"customersweb","buildconfig":"customersweb","openshift.io/build-config.name":"customersweb","openshift.io/build.start-policy":"Serial"},"annotations":{"openshift.io/build-config.name":"customersweb","openshift.io/build.number":"1"},"ownerReferences":[{"apiVersion":"build.openshift.io/v1","kind":"BuildConfig","name":"customersweb","uid":"dbfbfde3-a203-11e8-8784-080027653811","controller":true}]},"spec":{"serviceAccount":"builder","source":{"type":"Git","git":{"uri":"https://github.com/mandibuswell/agile-integration-customers.git","ref":"master"}},"strategy":{"type":"Source","sourceStrategy":{"from":{"kind":"DockerImage","name":"registry.access.redhat.com/rhscl/nodejs-8-rhel7@sha256:7b26a9d8ace47e939a9fcdca61620dbe47d1b936e68983e252cca50991704c7c"}}},"output":{"to":{"kind":"DockerImage","name":"172.30.1.1:5000/myfuseproject/customersweb:latest"},"pushSecret":{"name":"builder-dockercfg-hlkdv"}},"resources":{},"postCommit":{},"nodeSelector":null,"triggeredBy":[{"message":"Image change","imageChangeBuild":{"imageID":"registry.access.redhat.com/rhscl/nodejs-8-rhel7@sha256:7b26a9d8ace47e939a9fcdca61620dbe47d1b936e68983e252cca50991704c7c","fromRef":{"kind":"ImageStreamTag","namespace":"openshift","name":"nodejs:8"}}}]},"status":{"phase":"New","outputDockerImageReference":"172.30.1.1:5000/myfuseproject/customersweb:latest","config":{"kind":"BuildConfig","namespace":"myfuseproject","name":"customersweb"},"output":{}}}
+      - name: SOURCE_REPOSITORY
+        value: https://github.com/mandibuswell/agile-integration-customers.git
+      - name: SOURCE_URI
+        value: https://github.com/mandibuswell/agile-integration-customers.git
+      - name: SOURCE_REF
+        value: master
+      - name: ORIGIN_VERSION
+        value: v3.9.40
+      - name: ALLOWED_UIDS
+        value: 1-
+      - name: DROP_CAPS
+        value: KILL,MKNOD,SETGID,SETUID
+      image: registry.access.redhat.com/openshift3/ose-sti-builder:v3.9
+      imagePullPolicy: IfNotPresent
+      name: manage-dockerfile
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+      - mountPath: /tmp/build
+        name: buildworkdir
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: builder-token-g52fk
+        readOnly: true
+    nodeName: localhost
+    restartPolicy: Never
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: builder
+    serviceAccountName: builder
+    terminationGracePeriodSeconds: 30
+    volumes:
+    - emptyDir: {}
+      name: buildworkdir
+    - hostPath:
+        path: /var/run/docker.sock
+        type: ""
+      name: docker-socket
+    - hostPath:
+        path: /var/run/crio/crio.sock
+        type: ""
+      name: crio-socket
+    - name: builder-dockercfg-hlkdv-push
+      secret:
+        defaultMode: 384
+        secretName: builder-dockercfg-hlkdv
+    - name: builder-token-g52fk
+      secret:
+        defaultMode: 420
+        secretName: builder-token-g52fk
+  status:
+    phase: Pending
+    qosClass: BestEffort
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      openshift.io/deployment-config.latest-version: "1"
+      openshift.io/deployment-config.name: mysql
+      openshift.io/deployment.name: mysql-1
+      openshift.io/scc: restricted
+    creationTimestamp: null
+    generateName: mysql-1-
+    labels:
+      deployment: mysql-1
+      deploymentconfig: mysql
+      name: mysql
+    ownerReferences:
+    - apiVersion: v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicationController
+      name: mysql-1
+      uid: 6da2c20b-a1f9-11e8-8784-080027653811
+  spec:
+    containers:
+    - env:
+      - name: MYSQL_USER
+        valueFrom:
+          secretKeyRef:
+            key: database-user
+            name: mysql
+      - name: MYSQL_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            key: database-password
+            name: mysql
+      - name: MYSQL_ROOT_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            key: database-root-password
+            name: mysql
+      - name: MYSQL_DATABASE
+        valueFrom:
+          secretKeyRef:
+            key: database-name
+            name: mysql
+      image: registry.access.redhat.com/rhscl/mysql-57-rhel7@sha256:154cd19e9c2a9df09ad61ce61139b955499aecd2247eb32df299104c750c6feb
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        successThreshold: 1
+        tcpSocket:
+          port: 3306
+        timeoutSeconds: 1
+      name: mysql
+      ports:
+      - containerPort: 3306
+        protocol: TCP
+      readinessProbe:
+        exec:
+          command:
+          - /bin/sh
+          - -i
+          - -c
+          - MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u $MYSQL_USER -D $MYSQL_DATABASE
+            -e 'SELECT 1'
+        failureThreshold: 3
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        limits:
+          memory: 512Mi
+        requests:
+          memory: 512Mi
+      securityContext:
+        capabilities:
+          drop:
+          - KILL
+          - MKNOD
+          - SETGID
+          - SETUID
+        privileged: false
+        runAsUser: 1000090000
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/lib/mysql/data
+        name: mysql-data
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: default-token-kh2lm
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    imagePullSecrets:
+    - name: default-dockercfg-84fsw
+    nodeName: localhost
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      fsGroup: 1000090000
+      seLinuxOptions:
+        level: s0:c10,c0
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoSchedule
+      key: node.kubernetes.io/memory-pressure
+      operator: Exists
+    volumes:
+    - emptyDir: {}
+      name: mysql-data
+    - name: default-token-kh2lm
+      secret:
+        defaultMode: 420
+        secretName: default-token-kh2lm
+  status:
+    phase: Pending
+    qosClass: Burstable
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/original-replicas: "1"
+      openshift.io/deployer-pod.completed-at: 2018-08-17 09:02:12 +0000 UTC
+      openshift.io/deployer-pod.created-at: 2018-08-17 09:00:55 +0000 UTC
+      openshift.io/deployer-pod.name: camel-ose-springboot-xml-1-deploy
+      openshift.io/deployment-config.latest-version: "1"
+      openshift.io/deployment-config.name: camel-ose-springboot-xml
+      openshift.io/deployment.phase: Complete
+      openshift.io/deployment.replicas: "1"
+      openshift.io/deployment.status-reason: config change
+      openshift.io/encoded-deployment-config: |
+        {"kind":"DeploymentConfig","apiVersion":"v1","metadata":{"name":"camel-ose-springboot-xml","namespace":"myfuseproject","selfLink":"/apis/apps.openshift.io/v1/namespaces/myfuseproject/deploymentconfigs/camel-ose-springboot-xml","uid":"0c1fc0ba-a1fc-11e8-8784-080027653811","resourceVersion":"13303","generation":2,"creationTimestamp":"2018-08-17T09:00:54Z","labels":{"app":"camel-ose-springboot-xml","group":"org.mycompany","provider":"fabric8","version":"1.0.0-SNAPSHOT"},"annotations":{"fabric8.io/iconUrl":"img/icons/camel.svg","fabric8.io/metrics-path":"dashboard/file/camel-routes.json/?var-project=camel-ose-springboot-xml\u0026var-version=1.0.0-SNAPSHOT"}},"spec":{"strategy":{"type":"Rolling","rollingParams":{"updatePeriodSeconds":1,"intervalSeconds":1,"timeoutSeconds":3600,"maxUnavailable":"25%","maxSurge":"25%"},"resources":{},"activeDeadlineSeconds":21600},"triggers":[{"type":"ConfigChange"},{"type":"ImageChange","imageChangeParams":{"automatic":true,"containerNames":["spring-boot"],"from":{"kind":"ImageStreamTag","namespace":"myfuseproject","name":"camel-ose-springboot-xml:latest"},"lastTriggeredImage":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml@sha256:8dcb94949509480e69cbf02ed5d4a117330a7d772eac01577d0dd891a54ea4ae"}}],"replicas":1,"revisionHistoryLimit":2,"test":false,"selector":{"app":"camel-ose-springboot-xml","group":"org.mycompany","provider":"fabric8"},"template":{"metadata":{"creationTimestamp":null,"labels":{"app":"camel-ose-springboot-xml","group":"org.mycompany","provider":"fabric8","version":"1.0.0-SNAPSHOT"},"annotations":{"fabric8.io/iconUrl":"img/icons/camel.svg","fabric8.io/metrics-path":"dashboard/file/camel-routes.json/?var-project=camel-ose-springboot-xml\u0026var-version=1.0.0-SNAPSHOT"}},"spec":{"containers":[{"name":"spring-boot","image":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml@sha256:8dcb94949509480e69cbf02ed5d4a117330a7d772eac01577d0dd891a54ea4ae","ports":[{"name":"http","containerPort":8080,"protocol":"TCP"},{"name":"prometheus","containerPort":9779,"protocol":"TCP"},{"name":"jolokia","containerPort":8778,"protocol":"TCP"}],"env":[{"name":"SPRING_APPLICATION_JSON","value":"{\"server\":{\"tomcat\":{\"max-threads\":1}}}"},{"name":"KUBERNETES_NAMESPACE","valueFrom":{"fieldRef":{"apiVersion":"v1","fieldPath":"metadata.namespace"}}}],"resources":{"limits":{"cpu":"1"},"requests":{"cpu":"200m"}},"livenessProbe":{"httpGet":{"path":"/health","port":8081,"scheme":"HTTP"},"initialDelaySeconds":180,"timeoutSeconds":1,"periodSeconds":10,"successThreshold":1,"failureThreshold":3},"readinessProbe":{"httpGet":{"path":"/health","port":8081,"scheme":"HTTP"},"initialDelaySeconds":10,"timeoutSeconds":1,"periodSeconds":10,"successThreshold":1,"failureThreshold":3},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"IfNotPresent","securityContext":{"privileged":false}}],"restartPolicy":"Always","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","securityContext":{},"schedulerName":"default-scheduler"}}},"status":{"latestVersion":1,"observedGeneration":0,"replicas":0,"updatedReplicas":0,"availableReplicas":0,"unavailableReplicas":0,"details":{"message":"config change","causes":[{"type":"ConfigChange"}]}}}
+    creationTimestamp: null
+    generation: 1
+    labels:
+      app: camel-ose-springboot-xml
+      group: org.mycompany
+      openshift.io/deployment-config.name: camel-ose-springboot-xml
+      provider: fabric8
+      version: 1.0.0-SNAPSHOT
+    name: camel-ose-springboot-xml-1
+    ownerReferences:
+    - apiVersion: apps.openshift.io/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: DeploymentConfig
+      name: camel-ose-springboot-xml
+      uid: 0c1fc0ba-a1fc-11e8-8784-080027653811
+  spec:
+    replicas: 0
+    selector:
+      app: camel-ose-springboot-xml
+      deployment: camel-ose-springboot-xml-1
+      deploymentconfig: camel-ose-springboot-xml
+      group: org.mycompany
+      provider: fabric8
+    template:
+      metadata:
+        annotations:
+          fabric8.io/iconUrl: img/icons/camel.svg
+          fabric8.io/metrics-path: dashboard/file/camel-routes.json/?var-project=camel-ose-springboot-xml&var-version=1.0.0-SNAPSHOT
+          openshift.io/deployment-config.latest-version: "1"
+          openshift.io/deployment-config.name: camel-ose-springboot-xml
+          openshift.io/deployment.name: camel-ose-springboot-xml-1
+        creationTimestamp: null
+        labels:
+          app: camel-ose-springboot-xml
+          deployment: camel-ose-springboot-xml-1
+          deploymentconfig: camel-ose-springboot-xml
+          group: org.mycompany
+          provider: fabric8
+          version: 1.0.0-SNAPSHOT
+      spec:
+        containers:
+        - env:
+          - name: SPRING_APPLICATION_JSON
+            value: '{"server":{"tomcat":{"max-threads":1}}}'
+          - name: KUBERNETES_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: 172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml@sha256:8dcb94949509480e69cbf02ed5d4a117330a7d772eac01577d0dd891a54ea4ae
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 180
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: spring-boot
+          ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          - containerPort: 9779
+            name: prometheus
+            protocol: TCP
+          - containerPort: 8778
+            name: jolokia
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: "1"
+            requests:
+              cpu: 200m
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    replicas: 0
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/original-replicas: "1"
+      openshift.io/deployer-pod.completed-at: 2018-08-17 09:18:45 +0000 UTC
+      openshift.io/deployer-pod.created-at: 2018-08-17 09:14:27 +0000 UTC
+      openshift.io/deployer-pod.name: camel-ose-springboot-xml-2-deploy
+      openshift.io/deployment-config.latest-version: "2"
+      openshift.io/deployment-config.name: camel-ose-springboot-xml
+      openshift.io/deployment.phase: Complete
+      openshift.io/deployment.replicas: ""
+      openshift.io/deployment.status-reason: image change
+      openshift.io/encoded-deployment-config: |
+        {"kind":"DeploymentConfig","apiVersion":"v1","metadata":{"name":"camel-ose-springboot-xml","namespace":"myfuseproject","selfLink":"/apis/apps.openshift.io/v1/namespaces/myfuseproject/deploymentconfigs/camel-ose-springboot-xml","uid":"0c1fc0ba-a1fc-11e8-8784-080027653811","resourceVersion":"14397","generation":3,"creationTimestamp":"2018-08-17T09:00:54Z","labels":{"app":"camel-ose-springboot-xml","group":"org.mycompany","provider":"fabric8","version":"1.0.0-SNAPSHOT"},"annotations":{"fabric8.io/iconUrl":"img/icons/camel.svg","fabric8.io/metrics-path":"dashboard/file/camel-routes.json/?var-project=camel-ose-springboot-xml\u0026var-version=1.0.0-SNAPSHOT"}},"spec":{"strategy":{"type":"Rolling","rollingParams":{"updatePeriodSeconds":1,"intervalSeconds":1,"timeoutSeconds":3600,"maxUnavailable":"25%","maxSurge":"25%"},"resources":{},"activeDeadlineSeconds":21600},"triggers":[{"type":"ConfigChange"},{"type":"ImageChange","imageChangeParams":{"automatic":true,"containerNames":["spring-boot"],"from":{"kind":"ImageStreamTag","namespace":"myfuseproject","name":"camel-ose-springboot-xml:latest"},"lastTriggeredImage":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml@sha256:50de0275e97594484eb2955fe7e941f236eed54d54314243d01a9ff84b74abe3"}}],"replicas":1,"revisionHistoryLimit":2,"test":false,"selector":{"app":"camel-ose-springboot-xml","group":"org.mycompany","provider":"fabric8"},"template":{"metadata":{"creationTimestamp":null,"labels":{"app":"camel-ose-springboot-xml","group":"org.mycompany","provider":"fabric8","version":"1.0.0-SNAPSHOT"},"annotations":{"fabric8.io/iconUrl":"img/icons/camel.svg","fabric8.io/metrics-path":"dashboard/file/camel-routes.json/?var-project=camel-ose-springboot-xml\u0026var-version=1.0.0-SNAPSHOT"}},"spec":{"containers":[{"name":"spring-boot","image":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml@sha256:50de0275e97594484eb2955fe7e941f236eed54d54314243d01a9ff84b74abe3","ports":[{"name":"http","containerPort":8080,"protocol":"TCP"},{"name":"prometheus","containerPort":9779,"protocol":"TCP"},{"name":"jolokia","containerPort":8778,"protocol":"TCP"}],"env":[{"name":"SPRING_APPLICATION_JSON","value":"{\"server\":{\"tomcat\":{\"max-threads\":1}}}"},{"name":"KUBERNETES_NAMESPACE","valueFrom":{"fieldRef":{"apiVersion":"v1","fieldPath":"metadata.namespace"}}}],"resources":{"limits":{"cpu":"1"},"requests":{"cpu":"200m"}},"livenessProbe":{"httpGet":{"path":"/health","port":8081,"scheme":"HTTP"},"initialDelaySeconds":180,"timeoutSeconds":1,"periodSeconds":10,"successThreshold":1,"failureThreshold":3},"readinessProbe":{"httpGet":{"path":"/health","port":8081,"scheme":"HTTP"},"initialDelaySeconds":10,"timeoutSeconds":1,"periodSeconds":10,"successThreshold":1,"failureThreshold":3},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"IfNotPresent","securityContext":{"privileged":false}}],"restartPolicy":"Always","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","securityContext":{},"schedulerName":"default-scheduler"}}},"status":{"latestVersion":2,"observedGeneration":2,"replicas":1,"updatedReplicas":1,"availableReplicas":1,"unavailableReplicas":0,"details":{"message":"image change","causes":[{"type":"ImageChange","imageTrigger":{"from":{"kind":"DockerImage","name":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml@sha256:50de0275e97594484eb2955fe7e941f236eed54d54314243d01a9ff84b74abe3"}}}]},"conditions":[{"type":"Available","status":"True","lastUpdateTime":"2018-08-17T09:02:12Z","lastTransitionTime":"2018-08-17T09:02:12Z","message":"Deployment config has minimum availability."},{"type":"Progressing","status":"True","lastUpdateTime":"2018-08-17T09:02:13Z","lastTransitionTime":"2018-08-17T09:01:25Z","reason":"NewReplicationControllerAvailable","message":"replication controller \"camel-ose-springboot-xml-1\" successfully rolled out"}],"readyReplicas":1}}
+    creationTimestamp: null
+    generation: 1
+    labels:
+      app: camel-ose-springboot-xml
+      group: org.mycompany
+      openshift.io/deployment-config.name: camel-ose-springboot-xml
+      provider: fabric8
+      version: 1.0.0-SNAPSHOT
+    name: camel-ose-springboot-xml-2
+    ownerReferences:
+    - apiVersion: apps.openshift.io/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: DeploymentConfig
+      name: camel-ose-springboot-xml
+      uid: 0c1fc0ba-a1fc-11e8-8784-080027653811
+  spec:
+    replicas: 0
+    selector:
+      app: camel-ose-springboot-xml
+      deployment: camel-ose-springboot-xml-2
+      deploymentconfig: camel-ose-springboot-xml
+      group: org.mycompany
+      provider: fabric8
+    template:
+      metadata:
+        annotations:
+          fabric8.io/iconUrl: img/icons/camel.svg
+          fabric8.io/metrics-path: dashboard/file/camel-routes.json/?var-project=camel-ose-springboot-xml&var-version=1.0.0-SNAPSHOT
+          openshift.io/deployment-config.latest-version: "2"
+          openshift.io/deployment-config.name: camel-ose-springboot-xml
+          openshift.io/deployment.name: camel-ose-springboot-xml-2
+        creationTimestamp: null
+        labels:
+          app: camel-ose-springboot-xml
+          deployment: camel-ose-springboot-xml-2
+          deploymentconfig: camel-ose-springboot-xml
+          group: org.mycompany
+          provider: fabric8
+          version: 1.0.0-SNAPSHOT
+      spec:
+        containers:
+        - env:
+          - name: SPRING_APPLICATION_JSON
+            value: '{"server":{"tomcat":{"max-threads":1}}}'
+          - name: KUBERNETES_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: 172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml@sha256:50de0275e97594484eb2955fe7e941f236eed54d54314243d01a9ff84b74abe3
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 180
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: spring-boot
+          ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          - containerPort: 9779
+            name: prometheus
+            protocol: TCP
+          - containerPort: 8778
+            name: jolokia
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: "1"
+            requests:
+              cpu: 200m
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    replicas: 0
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    annotations:
+      openshift.io/deployer-pod.completed-at: 2018-08-17 09:23:11 +0000 UTC
+      openshift.io/deployer-pod.created-at: 2018-08-17 09:20:56 +0000 UTC
+      openshift.io/deployer-pod.name: camel-ose-springboot-xml-3-deploy
+      openshift.io/deployment-config.latest-version: "3"
+      openshift.io/deployment-config.name: camel-ose-springboot-xml
+      openshift.io/deployment.phase: Complete
+      openshift.io/deployment.replicas: ""
+      openshift.io/deployment.status-reason: image change
+      openshift.io/encoded-deployment-config: |
+        {"kind":"DeploymentConfig","apiVersion":"v1","metadata":{"name":"camel-ose-springboot-xml","namespace":"myfuseproject","selfLink":"/apis/apps.openshift.io/v1/namespaces/myfuseproject/deploymentconfigs/camel-ose-springboot-xml","uid":"0c1fc0ba-a1fc-11e8-8784-080027653811","resourceVersion":"14762","generation":4,"creationTimestamp":"2018-08-17T09:00:54Z","labels":{"app":"camel-ose-springboot-xml","group":"org.mycompany","provider":"fabric8","version":"1.0.0-SNAPSHOT"},"annotations":{"fabric8.io/iconUrl":"img/icons/camel.svg","fabric8.io/metrics-path":"dashboard/file/camel-routes.json/?var-project=camel-ose-springboot-xml\u0026var-version=1.0.0-SNAPSHOT"}},"spec":{"strategy":{"type":"Rolling","rollingParams":{"updatePeriodSeconds":1,"intervalSeconds":1,"timeoutSeconds":3600,"maxUnavailable":"25%","maxSurge":"25%"},"resources":{},"activeDeadlineSeconds":21600},"triggers":[{"type":"ConfigChange"},{"type":"ImageChange","imageChangeParams":{"automatic":true,"containerNames":["spring-boot"],"from":{"kind":"ImageStreamTag","namespace":"myfuseproject","name":"camel-ose-springboot-xml:latest"},"lastTriggeredImage":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml@sha256:79b497270996978d0d6bc3bbc5219bba548d0c0ec7bf6594e9ed6c56a91e6785"}}],"replicas":1,"revisionHistoryLimit":2,"test":false,"selector":{"app":"camel-ose-springboot-xml","group":"org.mycompany","provider":"fabric8"},"template":{"metadata":{"creationTimestamp":null,"labels":{"app":"camel-ose-springboot-xml","group":"org.mycompany","provider":"fabric8","version":"1.0.0-SNAPSHOT"},"annotations":{"fabric8.io/iconUrl":"img/icons/camel.svg","fabric8.io/metrics-path":"dashboard/file/camel-routes.json/?var-project=camel-ose-springboot-xml\u0026var-version=1.0.0-SNAPSHOT"}},"spec":{"containers":[{"name":"spring-boot","image":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml@sha256:79b497270996978d0d6bc3bbc5219bba548d0c0ec7bf6594e9ed6c56a91e6785","ports":[{"name":"http","containerPort":8080,"protocol":"TCP"},{"name":"prometheus","containerPort":9779,"protocol":"TCP"},{"name":"jolokia","containerPort":8778,"protocol":"TCP"}],"env":[{"name":"SPRING_APPLICATION_JSON","value":"{\"server\":{\"tomcat\":{\"max-threads\":1}}}"},{"name":"KUBERNETES_NAMESPACE","valueFrom":{"fieldRef":{"apiVersion":"v1","fieldPath":"metadata.namespace"}}}],"resources":{"limits":{"cpu":"1"},"requests":{"cpu":"200m"}},"livenessProbe":{"httpGet":{"path":"/health","port":8081,"scheme":"HTTP"},"initialDelaySeconds":180,"timeoutSeconds":1,"periodSeconds":10,"successThreshold":1,"failureThreshold":3},"readinessProbe":{"httpGet":{"path":"/health","port":8081,"scheme":"HTTP"},"initialDelaySeconds":10,"timeoutSeconds":1,"periodSeconds":10,"successThreshold":1,"failureThreshold":3},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"IfNotPresent","securityContext":{"privileged":false}}],"restartPolicy":"Always","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","securityContext":{},"schedulerName":"default-scheduler"}}},"status":{"latestVersion":3,"observedGeneration":3,"replicas":1,"updatedReplicas":1,"availableReplicas":1,"unavailableReplicas":0,"details":{"message":"image change","causes":[{"type":"ImageChange","imageTrigger":{"from":{"kind":"DockerImage","name":"172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml@sha256:79b497270996978d0d6bc3bbc5219bba548d0c0ec7bf6594e9ed6c56a91e6785"}}}]},"conditions":[{"type":"Available","status":"True","lastUpdateTime":"2018-08-17T09:18:25Z","lastTransitionTime":"2018-08-17T09:18:25Z","message":"Deployment config has minimum availability."},{"type":"Progressing","status":"True","lastUpdateTime":"2018-08-17T09:19:01Z","lastTransitionTime":"2018-08-17T09:18:31Z","reason":"NewReplicationControllerAvailable","message":"replication controller \"camel-ose-springboot-xml-2\" successfully rolled out"}],"readyReplicas":1}}
+    creationTimestamp: null
+    generation: 1
+    labels:
+      app: camel-ose-springboot-xml
+      group: org.mycompany
+      openshift.io/deployment-config.name: camel-ose-springboot-xml
+      provider: fabric8
+      version: 1.0.0-SNAPSHOT
+    name: camel-ose-springboot-xml-3
+    ownerReferences:
+    - apiVersion: apps.openshift.io/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: DeploymentConfig
+      name: camel-ose-springboot-xml
+      uid: 0c1fc0ba-a1fc-11e8-8784-080027653811
+  spec:
+    replicas: 1
+    selector:
+      app: camel-ose-springboot-xml
+      deployment: camel-ose-springboot-xml-3
+      deploymentconfig: camel-ose-springboot-xml
+      group: org.mycompany
+      provider: fabric8
+    template:
+      metadata:
+        annotations:
+          fabric8.io/iconUrl: img/icons/camel.svg
+          fabric8.io/metrics-path: dashboard/file/camel-routes.json/?var-project=camel-ose-springboot-xml&var-version=1.0.0-SNAPSHOT
+          openshift.io/deployment-config.latest-version: "3"
+          openshift.io/deployment-config.name: camel-ose-springboot-xml
+          openshift.io/deployment.name: camel-ose-springboot-xml-3
+        creationTimestamp: null
+        labels:
+          app: camel-ose-springboot-xml
+          deployment: camel-ose-springboot-xml-3
+          deploymentconfig: camel-ose-springboot-xml
+          group: org.mycompany
+          provider: fabric8
+          version: 1.0.0-SNAPSHOT
+      spec:
+        containers:
+        - env:
+          - name: SPRING_APPLICATION_JSON
+            value: '{"server":{"tomcat":{"max-threads":1}}}'
+          - name: KUBERNETES_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: 172.30.1.1:5000/myfuseproject/camel-ose-springboot-xml@sha256:79b497270996978d0d6bc3bbc5219bba548d0c0ec7bf6594e9ed6c56a91e6785
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 180
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: spring-boot
+          ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          - containerPort: 9779
+            name: prometheus
+            protocol: TCP
+          - containerPort: 8778
+            name: jolokia
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: "1"
+            requests:
+              cpu: 200m
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    replicas: 0
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    annotations:
+      openshift.io/deployer-pod.completed-at: 2018-08-17 09:59:43 +0000 UTC
+      openshift.io/deployer-pod.created-at: 2018-08-17 09:59:33 +0000 UTC
+      openshift.io/deployer-pod.name: customersweb-1-deploy
+      openshift.io/deployment-config.latest-version: "1"
+      openshift.io/deployment-config.name: customersweb
+      openshift.io/deployment.phase: Complete
+      openshift.io/deployment.replicas: "1"
+      openshift.io/deployment.status-reason: config change
+      openshift.io/encoded-deployment-config: |
+        {"kind":"DeploymentConfig","apiVersion":"v1","metadata":{"name":"customersweb","namespace":"myfuseproject","selfLink":"/apis/apps.openshift.io/v1/namespaces/myfuseproject/deploymentconfigs/customersweb","uid":"dbf6aff3-a203-11e8-8784-080027653811","resourceVersion":"17994","generation":2,"creationTimestamp":"2018-08-17T09:56:49Z","labels":{"app":"customersweb"},"annotations":{"openshift.io/generated-by":"OpenShiftWebConsole"}},"spec":{"strategy":{"type":"Rolling","rollingParams":{"updatePeriodSeconds":1,"intervalSeconds":1,"timeoutSeconds":600,"maxUnavailable":"25%","maxSurge":"25%"},"resources":{},"activeDeadlineSeconds":21600},"triggers":[{"type":"ImageChange","imageChangeParams":{"automatic":true,"containerNames":["customersweb"],"from":{"kind":"ImageStreamTag","namespace":"myfuseproject","name":"customersweb:latest"},"lastTriggeredImage":"172.30.1.1:5000/myfuseproject/customersweb@sha256:e95d073a9f0079da928774c812cb282c91c3d46e035ceb60b8af873bbbc7f06a"}},{"type":"ConfigChange"}],"replicas":1,"test":false,"selector":{"deploymentconfig":"customersweb"},"template":{"metadata":{"creationTimestamp":null,"labels":{"app":"customersweb","deploymentconfig":"customersweb"}},"spec":{"containers":[{"name":"customersweb","image":"172.30.1.1:5000/myfuseproject/customersweb@sha256:e95d073a9f0079da928774c812cb282c91c3d46e035ceb60b8af873bbbc7f06a","ports":[{"containerPort":8080,"protocol":"TCP"}],"resources":{},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"Always"}],"restartPolicy":"Always","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","securityContext":{},"schedulerName":"default-scheduler"}}},"status":{"latestVersion":1,"observedGeneration":1,"replicas":0,"updatedReplicas":0,"availableReplicas":0,"unavailableReplicas":0,"details":{"message":"config change","causes":[{"type":"ConfigChange"}]},"conditions":[{"type":"Available","status":"False","lastUpdateTime":"2018-08-17T09:56:49Z","lastTransitionTime":"2018-08-17T09:56:49Z","message":"Deployment config does not have minimum availability."}]}}
+    creationTimestamp: null
+    generation: 1
+    labels:
+      app: customersweb
+      openshift.io/deployment-config.name: customersweb
+    name: customersweb-1
+    ownerReferences:
+    - apiVersion: apps.openshift.io/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: DeploymentConfig
+      name: customersweb
+      uid: dbf6aff3-a203-11e8-8784-080027653811
+  spec:
+    replicas: 3
+    selector:
+      deployment: customersweb-1
+      deploymentconfig: customersweb
+    template:
+      metadata:
+        annotations:
+          openshift.io/deployment-config.latest-version: "1"
+          openshift.io/deployment-config.name: customersweb
+          openshift.io/deployment.name: customersweb-1
+        creationTimestamp: null
+        labels:
+          app: customersweb
+          deployment: customersweb-1
+          deploymentconfig: customersweb
+      spec:
+        containers:
+        - image: 172.30.1.1:5000/myfuseproject/customersweb@sha256:e95d073a9f0079da928774c812cb282c91c3d46e035ceb60b8af873bbbc7f06a
+          imagePullPolicy: Always
+          name: customersweb
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    replicas: 0
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    annotations:
+      openshift.io/deployer-pod.completed-at: 2018-08-17 08:42:35 +0000 UTC
+      openshift.io/deployer-pod.created-at: 2018-08-17 08:42:09 +0000 UTC
+      openshift.io/deployer-pod.name: mysql-1-deploy
+      openshift.io/deployment-config.latest-version: "1"
+      openshift.io/deployment-config.name: mysql
+      openshift.io/deployment.phase: Complete
+      openshift.io/deployment.replicas: "1"
+      openshift.io/deployment.status-reason: config change
+      openshift.io/encoded-deployment-config: |
+        {"kind":"DeploymentConfig","apiVersion":"v1","metadata":{"name":"mysql","namespace":"myfuseproject","selfLink":"/apis/apps.openshift.io/v1/namespaces/myfuseproject/deploymentconfigs/mysql","uid":"6d7d9a41-a1f9-11e8-8784-080027653811","resourceVersion":"11883","generation":2,"creationTimestamp":"2018-08-17T08:42:09Z","labels":{"template":"mysql-ephemeral-template"},"annotations":{"template.alpha.openshift.io/wait-for-ready":"true"}},"spec":{"strategy":{"type":"Recreate","recreateParams":{"timeoutSeconds":600},"resources":{},"activeDeadlineSeconds":21600},"triggers":[{"type":"ImageChange","imageChangeParams":{"automatic":true,"containerNames":["mysql"],"from":{"kind":"ImageStreamTag","namespace":"openshift","name":"mysql:5.7"},"lastTriggeredImage":"registry.access.redhat.com/rhscl/mysql-57-rhel7@sha256:154cd19e9c2a9df09ad61ce61139b955499aecd2247eb32df299104c750c6feb"}},{"type":"ConfigChange"}],"replicas":1,"test":false,"selector":{"name":"mysql"},"template":{"metadata":{"creationTimestamp":null,"labels":{"name":"mysql"}},"spec":{"volumes":[{"name":"mysql-data","emptyDir":{}}],"containers":[{"name":"mysql","image":"registry.access.redhat.com/rhscl/mysql-57-rhel7@sha256:154cd19e9c2a9df09ad61ce61139b955499aecd2247eb32df299104c750c6feb","ports":[{"containerPort":3306,"protocol":"TCP"}],"env":[{"name":"MYSQL_USER","valueFrom":{"secretKeyRef":{"name":"mysql","key":"database-user"}}},{"name":"MYSQL_PASSWORD","valueFrom":{"secretKeyRef":{"name":"mysql","key":"database-password"}}},{"name":"MYSQL_ROOT_PASSWORD","valueFrom":{"secretKeyRef":{"name":"mysql","key":"database-root-password"}}},{"name":"MYSQL_DATABASE","valueFrom":{"secretKeyRef":{"name":"mysql","key":"database-name"}}}],"resources":{"limits":{"memory":"512Mi"}},"volumeMounts":[{"name":"mysql-data","mountPath":"/var/lib/mysql/data"}],"livenessProbe":{"tcpSocket":{"port":3306},"initialDelaySeconds":30,"timeoutSeconds":1,"periodSeconds":10,"successThreshold":1,"failureThreshold":3},"readinessProbe":{"exec":{"command":["/bin/sh","-i","-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysql -h 127.0.0.1 -u $MYSQL_USER -D $MYSQL_DATABASE -e 'SELECT 1'"]},"initialDelaySeconds":5,"timeoutSeconds":1,"periodSeconds":10,"successThreshold":1,"failureThreshold":3},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"IfNotPresent","securityContext":{"capabilities":{},"privileged":false}}],"restartPolicy":"Always","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","securityContext":{},"schedulerName":"default-scheduler"}}},"status":{"latestVersion":1,"observedGeneration":0,"replicas":0,"updatedReplicas":0,"availableReplicas":0,"unavailableReplicas":0,"details":{"message":"config change","causes":[{"type":"ConfigChange"}]}}}
+    creationTimestamp: null
+    generation: 1
+    labels:
+      openshift.io/deployment-config.name: mysql
+      template: mysql-ephemeral-template
+    name: mysql-1
+    ownerReferences:
+    - apiVersion: apps.openshift.io/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: DeploymentConfig
+      name: mysql
+      uid: 6d7d9a41-a1f9-11e8-8784-080027653811
+  spec:
+    replicas: 1
+    selector:
+      deployment: mysql-1
+      deploymentconfig: mysql
+      name: mysql
+    template:
+      metadata:
+        annotations:
+          openshift.io/deployment-config.latest-version: "1"
+          openshift.io/deployment-config.name: mysql
+          openshift.io/deployment.name: mysql-1
+        creationTimestamp: null
+        labels:
+          deployment: mysql-1
+          deploymentconfig: mysql
+          name: mysql
+      spec:
+        containers:
+        - env:
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                key: database-user
+                name: mysql
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: database-password
+                name: mysql
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: database-root-password
+                name: mysql
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                key: database-name
+                name: mysql
+          image: registry.access.redhat.com/rhscl/mysql-57-rhel7@sha256:154cd19e9c2a9df09ad61ce61139b955499aecd2247eb32df299104c750c6feb
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 3306
+            timeoutSeconds: 1
+          name: mysql
+          ports:
+          - containerPort: 3306
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -i
+              - -c
+              - MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u $MYSQL_USER -D $MYSQL_DATABASE
+                -e 'SELECT 1'
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              memory: 512Mi
+          securityContext:
+            capabilities: {}
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /var/lib/mysql/data
+            name: mysql-data
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir: {}
+          name: mysql-data
+  status:
+    replicas: 0
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      fabric8.io/iconUrl: img/icons/camel.svg
+      prometheus.io/port: "9779"
+      prometheus.io/scrape: "true"
+    creationTimestamp: null
+    labels:
+      app: camel-ose-springboot-xml
+      expose: "true"
+      group: org.mycompany
+      provider: fabric8
+      version: 1.0.0-SNAPSHOT
+    name: camel-ose-springboot-xml
+  spec:
+    ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      app: camel-ose-springboot-xml
+      group: org.mycompany
+      provider: fabric8
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftWebConsole
+    creationTimestamp: null
+    labels:
+      app: customersweb
+    name: customersweb
+  spec:
+    ports:
+    - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      deploymentconfig: customersweb
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      template.openshift.io/expose-uri: mysql://{.spec.clusterIP}:{.spec.ports[?(.name=="mysql")].port}
+    creationTimestamp: null
+    labels:
+      template: mysql-ephemeral-template
+    name: mysql
+  spec:
+    ports:
+    - name: mysql
+      port: 3306
+      protocol: TCP
+      targetPort: 3306
+    selector:
+      name: mysql
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
